@@ -1,0 +1,16 @@
+{
+  "name": "network-edge-packet-inspector",
+  "version": "1.0.0",
+  "description": "Server for parsing and storing pcap files and serving them to a website.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "CS491-Vandalay",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.2",
+    "morgan": "^1.9.0",
+    "wintersmith": "^2.4.1"
+  }
+}
