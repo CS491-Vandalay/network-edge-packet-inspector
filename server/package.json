@@ -4,6 +4,12 @@
   "description": "Server for parsing and storing pcap files and serving them to a website.",
   "main": "index.js",
   "scripts": {
+    "build-css":"stylus src/docs/api-docs/stylesheets/index.styl -o src/docs/static/css/api-docs",
+    "watch-css":"stylus src/docs/api-docs/stylesheets/index.styl -o src/docs/static/css/api-docs -w",
+    "clean":"rm -rf src/docs/static/css/api-docs/stylesheets && mkdir -p src/docs/static/css/api-docs/stylesheets",
+    "build":"npm run clean && npm run build-css",
+    "watch":"npm run clean && npm run watch-css & nodemon server -e js,jade",
+    "start":"node server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "CS491-Vandalay",
@@ -11,8 +17,10 @@
   "dependencies": {
     "express": "^4.16.2",
     "express-http-proxy": "^1.0.7",
+    "jade": "^1.11.0",
     "morgan": "^1.9.0",
     "request": "^2.83.0",
+    "stylus": "^0.54.5",
     "wintersmith": "^2.4.1"
   }
 }
