@@ -1,7 +1,7 @@
 var express = require('express'),
 	logger = require('morgan'),
 	app = express(),
-	template = require('jade').compileFile(__dirname+'/src/docs/api-docs/templates/homepage.jade');
+	template = require('pug').compileFile(__dirname+'/src/docs/api-docs/templates/homepage.pug');
 
 const path = require('path');
 
