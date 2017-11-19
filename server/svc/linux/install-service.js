@@ -4,7 +4,7 @@ var Service = require('node-linux').Service;
 var svc = new Service({
 	name:'Vandelay',
 	description: 'Vandelay-Inspector',
-	script:'../server.js',
+	script:'../../server.js',
 });
 
 // Listen for the install event, which indicates that the process is available as a service.
