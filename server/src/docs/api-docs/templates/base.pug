@@ -1,0 +1,203 @@
+//
+   Created by mrodger4 on 11/15/17.
+doctype html
+
+html
+    head
+        link(rel='stylesheet', href='/css/api-docs/index.css')
+        title
+        script(src="/docs/api/node_modules/jquery/dist/jquery.min.js")
+        script.
+            /**
+             * Created by mrodger4 on 11/15/17.
+             */
+            $(document).ready(function () {
+                var packet1 = JSON.parse("{\"id\":\"1\",\"name\":\"computer\",\"srcIp\":\"127.0.0.1\"}");
+                var packet2 = JSON.parse("{\"id\":\"1\",\"name\":\"computer\",\"dstIp\":\"127.0.0.1\"}");
+                var loc1 = JSON.parse("{\"id\":\"1\",\"country\":\"USA\",\"state\":\"VA\",\"city\":\"Fairfax\"}");
+                var loc2 = JSON.parse("{\"id\":\"1\",\"country\":\"USA\"}");
+                var traffic1 = JSON.parse("{\"id\":\"1\", \"type\":\"video\"}");
+                var traffic2 = JSON.parse("{\"id\":\"1\", \"type\":\"video\",\"packets\":[]}");
+                var traffic3 = JSON.parse("{\"id\":\"1\", \"type\":\"video\",\"devices\":[]}");
+                var traffic4 = JSON.parse("{\"id\":\"1\", \"type\":\"video\"}");
+                var traffic5 = JSON.parse("{\"id\":\"1\", \"type\":\"video\",\"packets\":[]}");
+                var traffic6 = JSON.parse("{\"id\":\"1\", \"type\":\"video\",\"devices\":[]}");
+                var error1 = JSON.parse("{\"error\":\"error message\"}");
+
+                $("#packet1").text(JSON.stringify(packet1, null, "\t"));
+                $("#packet2").text(JSON.stringify(packet2, null, "\t"));
+                $("#loc1").text(JSON.stringify(loc1, null, "\t"));
+                $("#loc2").text(JSON.stringify(loc2, null, "\t"));
+                $("#traffic1").text(JSON.stringify(traffic1, null, "\t"));
+                $("#traffic2").text(JSON.stringify(traffic2, null, "\t"));
+                $("#traffic3").text(JSON.stringify(traffic3, null, "\t"));
+                $("#traffic4").text(JSON.stringify(traffic4, null, "\t"));
+                $("#traffic5").text(JSON.stringify(traffic5, null, "\t"));
+                $("#traffic6").text(JSON.stringify(traffic6, null, "\t"));
+                $("#error1").text(JSON.stringify(error1, null, "\t"));
+
+                $("a[href*='#']").bind('click', function (e) {
+                    e.preventDefault(); // prevent hard jump, the default behavior
+
+                    var target = $(this).attr("href"); // Set the target as variable
+
+                    // perform animated scrolling by getting top-position of target-element and set it as scroll target
+                    $('html, body').stop().animate({
+                        scrollTop: $(target).offset().top
+                    }, 600, function () {
+                        location.hash = target; //attach the hash (#jumptarget) to the pageurl
+                    });
+
+                    return false;
+                });
+            });
+
+            $(window).scroll(function () {
+                var scrollDistance = $(window).scrollTop();
+
+                // Show/hide menu on scroll
+                //if (scrollDistance >= 850) {
+                //		$('nav').fadeIn("fast");
+                //} else {
+                //		$('nav').fadeOut("fast");
+                //}
+
+                // Assign active class to nav links while scolling
+                $('.page-section').each(function (i) {
+                    if ($(this).position().top <= scrollDistance) {
+                        $('.navigation a.active').removeClass('active');
+                        $('.navigation a').eq(i).addClass('active');
+                    }
+                });
+            }).scroll();
+    body
+        .header
+            h1.page-title Network Edge Packet Inspector API
+
+        ul.nav
+            li: a(href='/') Home
+            li: a(href='#packets') Packets
+            li: a(href='#locations') Locations
+            li: a(href='#traffic') Traffic Types
+            li: a(href='#errors') Errors
+
+        .main-content
+            block packets
+                h2(id="packets") Packets
+                .divider
+                h3 GET /api/packets/:id
+                div
+                    div
+                        .attrName
+                            h4 id:
+                        .attrDesc
+                            h4 The id of the packet to be retrieved
+                div.cell(id="packet1")
+                .divider2
+                h3 GET /api/packets/:id/:attribute
+                div
+                    div
+                        .attrName
+                            h4 id:
+                        .attrDesc
+                            h4 The id of the packet to be retrieved
+                    div
+                        .attrName
+                            h4 attribute:
+                        .attrDesc
+                            h4 The attribute to retrieve from the packet with the specified id
+                div.cell
+                    p(id="packet2")
+
+            block locations
+                .spacer
+                h2(id="locations") Locations
+                .divider
+                h3 GET /api/locations/:id
+                div
+                    div
+                        .attrName
+                            h4 id:
+                        .attrDesc
+                            h4 The id of the location to be retrieved
+                .cell
+                    p(id="loc1")
+                .divider2
+                h3 GET /api/locations/:id/:attribute
+                div
+                    div
+                        .attrName
+                            h4 id:
+                        .attrDesc
+                            h4 The id of the location to be retrieved
+                    div
+                        .attrName
+                            h4 attribute:
+                        .attrDesc
+                            h4 The attribute to retrieve from the location with the specified id
+                .cell
+                    p(id="loc2")
+
+            block traffic
+                .spacer
+                h2(id="traffic") Traffic Types
+                .divider
+                h3 GET /api/type/:id
+                div
+                    div
+                        .attrName
+                            h4 id:
+                        .attrDesc
+                            h4 The id of the type to be retrieved
+                .cell
+                    p(id="traffic1")
+                .divider2
+                h3 GET /api/type/:id/packets
+                div
+                    div
+                        .attrName
+                            h4 id:
+                        .attrDesc
+                            h4 The id of the type to be retrieved
+                .cell
+                    p(id="traffic2")
+                .divider2
+                h3 GET /api/type/:id/devices
+                div
+                    div
+                        .attrName
+                            h4 id:
+                        .attrDesc
+                            h4 The id of the type to be retrieved
+                .cell
+                    p(id="traffic3")
+                .divider2
+                h3 GET /api/type/:type/packets
+                div
+                    div
+                        .attrName
+                            h4 type:
+                        .attrDesc
+                            h4 The name of the type of traffic to be retrieved
+                .cell
+                    p(id="traffic5")
+                .divider2
+                h3 GET /api/type/:type/devices
+                div
+                    div
+                        .attrName
+                            h4 type:
+                        .attrDesc
+                            h4 The The name of the type of traffic to be retrieved
+                .cell
+                    p(id="traffic6")
+
+            block errors
+                .spacer
+                h2(id="errors") Errors
+                h3 Any API call that fails due to a server error will return the following json document.
+                .cell
+                    p(id="error1")
+
+        .footer
+            p Written by Vandelay. A George Mason University CS 491 Team.

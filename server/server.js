@@ -1,7 +1,7 @@
 var express = require('express'),
 	logger = require('morgan'),
 	app = express(),
-	template = require('pug').compileFile(__dirname+'/src/docs/api-docs/templates/homepage.pug');
+	template = require('pug').compileFile(__dirname+'/src/docs/api-docs/templates/base.pug');
 
 const path = require('path');
 
@@ -15,11 +15,11 @@ app.get('/docs/api', function (req,res){
 		var html = template({title:'Home'});
 		res.send(html);
 	} catch(e){
-		next(e);
+		console.log(e);
 	}
 });
 
-
+app.use('/docs/api/node_modules',express.static(path.join(__dirname,'/node_modules')));
 
 app.get('*',function (req,res){
     res.redirect("/docs/api");
