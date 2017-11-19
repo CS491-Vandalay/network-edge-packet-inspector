@@ -1,3 +1,5 @@
+#http://pythonhosted.org/python-geoip/#geoip.IPInfo
+
 from scapy.all import *
 from geoip import *
 
@@ -20,13 +22,14 @@ while i < count:
             print "SRC Country: " + match.country
             print "SRC Continent: " + match.continent
             print "SRC TimeZone: " + match.timezone
+            print "Src (lat,lon): %s" % (match.location,)
 
         match = geolite2.lookup(dst)
         if (match is not None):
             print "DST Country: " + match.country
             print "DST Continent: " + match.continent
             print "DST TimeZone: " + match.timezone
-
+            print "DST (lat,lon): %s" % (match.location,)
     elif(ipv6):
         src = packets[i][IPv6].src
         dst = packets[i][IPv6].dst
@@ -36,12 +39,14 @@ while i < count:
             print "SRC Country: " + match.country
             print "SRC Continent: " + match.continent
             print "SRC TimeZone: " + match.timezone
+            print "Src (lat,lon): %s" % (match.location,)
 
         match = geolite2.lookup(dst)
         if (match is not None):
             print "DST Country: " + match.country
             print "DST Continent: " + match.continent
             print "DST TimeZone: " + match.timezone
+            print "DST (lat,lon): %s" % (match.location,)
 
 
     i+=1
