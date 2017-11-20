@@ -92,7 +92,8 @@ html
                             h4 id:
                         .attrDesc
                             h4 The id of the packet to be retrieved
-                div.cell(id="packet1")
+                .cell
+                    pre(id="packet1")
                 .divider2
                 h3 GET /api/packets/:id/:attribute
                 div
@@ -106,8 +107,8 @@ html
                             h4 attribute:
                         .attrDesc
                             h4 The attribute to retrieve from the packet with the specified id
-                div.cell
-                    p(id="packet2")
+                .cell
+                    pre(id="packet2")
 
             block locations
                 .spacer
@@ -121,7 +122,7 @@ html
                         .attrDesc
                             h4 The id of the location to be retrieved
                 .cell
-                    p(id="loc1")
+                    pre(id="loc1")
                 .divider2
                 h3 GET /api/locations/:id/:attribute
                 div
@@ -136,7 +137,7 @@ html
                         .attrDesc
                             h4 The attribute to retrieve from the location with the specified id
                 .cell
-                    p(id="loc2")
+                    pre(id="loc2")
 
             block traffic
                 .spacer
@@ -150,7 +151,7 @@ html
                         .attrDesc
                             h4 The id of the type to be retrieved
                 .cell
-                    p(id="traffic1")
+                    pre(id="traffic1")
                 .divider2
                 h3 GET /api/type/:id/packets
                 div
@@ -160,7 +161,7 @@ html
                         .attrDesc
                             h4 The id of the type to be retrieved
                 .cell
-                    p(id="traffic2")
+                    pre(id="traffic2")
                 .divider2
                 h3 GET /api/type/:id/devices
                 div
@@ -170,7 +171,7 @@ html
                         .attrDesc
                             h4 The id of the type to be retrieved
                 .cell
-                    p(id="traffic3")
+                    pre(id="traffic3")
                 .divider2
                 h3 GET /api/type/:type/packets
                 div
@@ -180,7 +181,7 @@ html
                         .attrDesc
                             h4 The name of the type of traffic to be retrieved
                 .cell
-                    p(id="traffic5")
+                    pre(id="traffic5")
                 .divider2
                 h3 GET /api/type/:type/devices
                 div
@@ -190,14 +191,14 @@ html
                         .attrDesc
                             h4 The The name of the type of traffic to be retrieved
                 .cell
-                    p(id="traffic6")
+                    pre(id="traffic6")
 
             block errors
                 .spacer
                 h2(id="errors") Errors
                 h3 Any API call that fails due to a server error will return the following json document.
                 .cell
-                    p(id="error1")
+                    pre(id="error1")
 
         .footer
             p Written by Vandelay. A George Mason University CS 491 Team.
