@@ -24,17 +24,17 @@ html
                 var traffic6 = JSON.parse("{\"id\":\"1\", \"type\":\"video\",\"devices\":[]}");
                 var error1 = JSON.parse("{\"error\":\"error message\"}");
 
-                $("#packet1").text(JSON.stringify(packet1, null, "\t"));
-                $("#packet2").text(JSON.stringify(packet2, null, "\t"));
-                $("#loc1").text(JSON.stringify(loc1, null, "\t"));
-                $("#loc2").text(JSON.stringify(loc2, null, "\t"));
-                $("#traffic1").text(JSON.stringify(traffic1, null, "\t"));
-                $("#traffic2").text(JSON.stringify(traffic2, null, "\t"));
-                $("#traffic3").text(JSON.stringify(traffic3, null, "\t"));
-                $("#traffic4").text(JSON.stringify(traffic4, null, "\t"));
-                $("#traffic5").text(JSON.stringify(traffic5, null, "\t"));
-                $("#traffic6").text(JSON.stringify(traffic6, null, "\t"));
-                $("#error1").text(JSON.stringify(error1, null, "\t"));
+                $("#packet1").text(JSON.stringify(packet1, null, 2));
+                $("#packet2").text(JSON.stringify(packet2, null, 2));
+                $("#loc1").text(JSON.stringify(loc1, null, 2));
+                $("#loc2").text(JSON.stringify(loc2, null, 2));
+                $("#traffic1").text(JSON.stringify(traffic1, null, 2));
+                $("#traffic2").text(JSON.stringify(traffic2, null, 2));
+                $("#traffic3").text(JSON.stringify(traffic3, null, 2));
+                $("#traffic4").text(JSON.stringify(traffic4, null, 2));
+                $("#traffic5").text(JSON.stringify(traffic5, null, 2));
+                $("#traffic6").text(JSON.stringify(traffic6, null, 2));
+                $("#error1").text(JSON.stringify(error1, null, 2));
 
                 $("a[href*='#']").bind('click', function (e) {
                     e.preventDefault(); // prevent hard jump, the default behavior
