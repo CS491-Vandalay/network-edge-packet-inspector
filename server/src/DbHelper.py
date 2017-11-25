@@ -11,6 +11,13 @@ class DbHelper(object):
                                             user=config.get('DatabaseSection', 'database.user'),
                                             password=config.get('DatabaseSection', 'database.password'))
 
+        # self._graph = Graph(host=config.get('DatabaseSection', 'database.dbhost'),
+        #                     bolt=True,
+        #                     bolt_port=int(config.get('DatabaseSection','database.bolt-port')),
+        #                     secure=True,
+        #                     user=config.get('DatabaseSection', 'database.user'),
+        #                     password=config.get('DatabaseSection', 'database.password'))
+
     #########################################
     #
     #   TEST

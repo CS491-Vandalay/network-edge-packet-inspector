@@ -16,6 +16,14 @@ class TestDbHelper():
                                             user=config.get('DatabaseSection', 'database.user'),
                                             password=config.get('DatabaseSection', 'database.password'))
 
+        # self._graph = Graph(host=config.get('DatabaseSection', 'database.dbhost'),
+        #                     bolt=True,
+        #                     bolt_port=int(config.get('DatabaseSection','database.bolt-port')),
+        #                     secure=True,
+        #                     user=config.get('DatabaseSection', 'database.user'),
+        #                     password=config.get('DatabaseSection', 'database.password'))
+
+
     def destroy(self):
         self._graph.data("MATCH(a) WHERE a.test='true' detach delete a")
 
