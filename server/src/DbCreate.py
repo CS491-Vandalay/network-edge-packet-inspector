@@ -14,6 +14,7 @@ session = driver.session()
 constraints = []
 
 constraints.append("CREATE CONSTRAINT ON (type:Type) ASSERT type.name IS UNIQUE")
+constraints.append("CREATE CONSTRAINT ON (type:Type) ASSERT exists(type.name)")
 
 for constraint in constraints:
     try:
