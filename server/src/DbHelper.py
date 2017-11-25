@@ -1,15 +1,15 @@
 import ConfigParser
-from neo4j.v1 import GraphDatabase, basic_auth
-import json
+
+from py2neo import Graph, Node
+
 
 class DbHelper(object):
-
-
     def __init__(self):
         config = ConfigParser.RawConfigParser()
         config.read('Server.properties')
-        self.__driver = GraphDatabase.driver(config.get('DatabaseSection','database.dbname'), auth=basic_auth(config.get('DatabaseSection','database.user'), config.get('DatabaseSection','database.password')))
-        self.__session = self.__driver.session()
+        self._graph = Graph(host=config.get('DatabaseSection', 'database.dbhost'),
+                                            user=config.get('DatabaseSection', 'database.user'),
+                                            password=config.get('DatabaseSection', 'database.password'))
 
     #########################################
     #
@@ -19,14 +19,13 @@ class DbHelper(object):
 
     def testConn(self):
         success = False
-        qry = "CREATE (a:testConn {name:'test'})"
-        self.__session.run(qry)
-        result = self.__session.run("MATCH (a:testConn) return a")
+        test = Node("TestConn", name="test")
+        self._graph.create(test)
+        result = self._graph.data("MATCH (a:testConn) return a")
         for record in result:
-            if(record['a'].properties['name'] is not None):
+            if (record['a'].properties['name'] is not None):
                 success = record['a'].properties['name'] == 'test'
-        qry = "MATCH (a:testConn) detach delete a"
-        self.__session.run(qry)
+        self._graph.data("MATCH (a:testConn) detach delete a")
         return success
 
     #########################################
@@ -39,31 +38,55 @@ class DbHelper(object):
         qry = "MATCH (a: Type) return a"
         res = []
         try:
-            result = self.__session.run(qry)
+            result = self._graph.data(qry)
 
             for record in result:
                 res.append(record)
 
-            return {"success":True, "results":res}
+            return {"success": True, "results": res}
         except Exception as e:
-            return {"success":False, "error":str(e)}
+            return {"success": False, "error": str(e)}
 
-    def getType(self,name):
+    def getType(self, name):
         qry = "MATCH (a:Type {name:{name}})"
 
         try:
-            res = self.__session.run(qry,{"name":name})
-            return {"success":True}
+            res = self._graph.data(qry, {"name": name})
+
+            results = []
+            for record in res:
+                results.append(record)
+
+            return {"success": True, "results": results}
+
         except Exception as e:
-            return  {"success":False,"error":str(e)}
+            return {"success": False, "error": str(e)}
 
     def saveTypes(self, document):
-        qry = "CREATE (a:Type {name:{name}})"
+        qry = "CREATE (a:Type {name:{name},test:{test})"
 
         try:
-            self.__session.run(qry,{"name": document['name']})
+            typeNode = Node("Type", name=document['name'], test=document['test'])
+            self._graph.create(typeNode)
 
-            return {"success":True}
+            return {"success": True}
 
         except Exception as e:
-            return {"success":False,"error":str(e)}
+            return {"success": False, "error": str(e)}
+
+    def getPacketsForType(self, param):
+        qry = "MATCH (b:Type)-[:TypeOf]->(a:Packet) return a"
+
+        try:
+            res = self._graph.data(qry)
+
+            results = []
+
+            for record in res:
+                results.append(record)
+
+            return {"success": True, "results": results}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+        pass
