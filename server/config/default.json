@@ -1,0 +1,13 @@
+{
+  "metricTypes": [
+    {
+      "alias": "typeOne",
+      "fileName": "pyTest.py"
+    },
+    {
+      "alias": "typeTwo",
+      "fileName": "pyTest2.py"
+    }
+  ],
+  "metricDir": "/home/mrodger4/workspaces/CS491/network-edge-packet-inspector/server/Metrics/"
+}

@@ -12,9 +12,10 @@
     "start": "node server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "CS491-Vandalay",
+  "author": "CS491-Vandelay",
   "license": "ISC",
   "dependencies": {
+    "config": "^1.29.2",
     "express": "^4.16.2",
     "express-http-proxy": "^1.0.7",
     "jquery": "^3.2.1",
