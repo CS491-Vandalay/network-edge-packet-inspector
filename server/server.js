@@ -2,7 +2,7 @@
  *              SERVER STUFF
  **************************************************/
 
-var express = require('express'),
+let express = require('express'),
     spawn = require('child_process').spawn,
     config = require('config'),
     logger = require('morgan'),
@@ -13,7 +13,7 @@ const path = require('path');
 
 app.use(logger('dev'));
 
-var server = app.listen(8090, function () {
+let server = app.listen(8090, () => {
     console.log("Server listening on port 8090");
 });
 
@@ -31,7 +31,7 @@ var server = app.listen(8090, function () {
  * }
  *
  */
-app.get('/api/doMetric/:metricName', function (req, res) {
+app.get('/api/doMetric/:metricName', (req, res) => {
 
     // Get all the metrics
     metricTypes = config.get('metricTypes');
@@ -56,18 +56,18 @@ app.get('/api/doMetric/:metricName', function (req, res) {
         body = '';
 
         // put all of stdout into body
-        pyTest.stdout.on('data', function (data) {
+        pyTest.stdout.on('data', (data) => {
             body += data.toString()
         });
 
         // log any err's to console
-        pyTest.stderr.on('data', function (data) {
+        pyTest.stderr.on('data', (data) =>{
             console.log(data.toString())
         });
 
         // when child process is done log the exit code
         // and send the results to the browser
-        pyTest.on('close', function (code) {
+        pyTest.on('close', (code) => {
             console.log("Exit Code:", code.toString());
 
             // Convert string body to json body
@@ -100,7 +100,7 @@ app.get('/api/doMetric/:metricName', function (req, res) {
  *   ]
  * }
  */
-app.get('/api/getMetricTypes',function(req,res){
+app.get('/api/getMetricTypes',(req,res)=>{
 
     // Get the metrics
     metricTypes = config.get('metricTypes');
@@ -120,6 +120,10 @@ app.get('/api/getMetricTypes',function(req,res){
     }
 });
 
+app.get('/api/getMetric/:metricName', (req,res)=>{
+
+});
+
 /***************************************************
  *              PCAP ROUTES
  **************************************************/
@@ -132,10 +136,10 @@ app.get('/api/getMetricTypes',function(req,res){
 
 app.use(express.static(path.join(__dirname + "/src/docs/static")));
 
-app.get('/docs/api', function (req, res) {
+app.get('/docs/api', (req, res) => {
     try {
         console.log(path.join(__dirname + '/src/docs/api-docs'));
-        var html = template({title: 'Home'});
+        let html = template({title: 'Home'});
         res.send(html);
     } catch (e) {
         console.log(e);
