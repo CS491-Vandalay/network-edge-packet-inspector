@@ -7,9 +7,13 @@ let express = require('express'),
     config = require('config'),
     logger = require('morgan'),
     app = express(),
-    template = require('pug').compileFile(__dirname + '/src/docs/api-docs/templates/base.pug');
+    neoClass = require('./neo.js');
+
+template = require('pug').compileFile(__dirname + '/src/docs/api-docs/templates/base.pug');
 
 const path = require('path');
+
+let neoObj = new neoClass();
 
 app.use(logger('dev'));
 
@@ -37,13 +41,13 @@ app.get('/api/doMetric/:metricName', (req, res) => {
     metricTypes = config.get('metricTypes');
 
     // Find the metric requested
-    metric = metricTypes.find(function(m){
+    metric = metricTypes.find(function (m) {
         return m["alias"] === req.params.metricName;
     });
 
     // If there is no metric found then send res now.
-    if(metric === undefined){
-        res.send({"success":false,"msg":"no metric found"})
+    if (metric === undefined) {
+        res.send({"success": false, "msg": "no metric found"})
     } else { // Else start the metric job
         console.log("Running:", metric["alias"], " with filename:", metric["fileName"]);
 
@@ -61,7 +65,7 @@ app.get('/api/doMetric/:metricName', (req, res) => {
         });
 
         // log any err's to console
-        pyTest.stderr.on('data', (data) =>{
+        pyTest.stderr.on('data', (data) => {
             console.log(data.toString())
         });
 
@@ -74,7 +78,7 @@ app.get('/api/doMetric/:metricName', (req, res) => {
             body = JSON.parse(body.split("'").join("\""));
 
             // wrap the results in a json
-            result = {"sucess":true,"results": body};
+            result = {"sucess": true, "results": body};
 
             // send the response
             res.end(JSON.stringify(result));
@@ -100,13 +104,13 @@ app.get('/api/doMetric/:metricName', (req, res) => {
  *   ]
  * }
  */
-app.get('/api/getMetricTypes',(req,res)=>{
+app.get('/api/getMetricTypes', (req, res) => {
 
     // Get the metrics
     metricTypes = config.get('metricTypes');
 
-    if(metricTypes === undefined){
-        res.send({"success":true,"msg":"no metrics found"})
+    if (metricTypes === undefined) {
+        res.send({"success": true, "msg": "no metrics found"})
     } else {
 
         // make a return obj
@@ -120,8 +124,8 @@ app.get('/api/getMetricTypes',(req,res)=>{
     }
 });
 
-app.get('/api/getMetric/:metricName', (req,res)=>{
-
+app.get('/api/getMetric/:metricName', (req, res) => {
+    //TODO: Write this
 });
 
 /***************************************************
@@ -129,6 +133,72 @@ app.get('/api/getMetric/:metricName', (req,res)=>{
  **************************************************/
 
 // TODO: Write the routes
+app.get('/api/test', (req, res) => {
+
+    sCallback = (data) => {
+        body = [];
+        data["records"].forEach((record) => {
+            body.push(record.get("n.name"));
+        });
+        res.send({"success": true, "results": body});
+    };
+
+    fCallback = (err) => {
+        console.log("Error: ", err);
+        res.send({"success": false, "results": err})
+    };
+
+    neoObj.readTest(sCallback, fCallback)
+});
+
+/************************************************************
+ *              PCAP TYPES
+ ***********************************************************/
+
+/**
+ * This function retrieves all the defined Types in
+ * the neo4j database associated with this server.
+ * The return is of the following format:
+ *
+ * { "success": true,
+ *   "results": {
+ *      [
+ *          {"id":0,"type":"media"
+ *      ]
+ *   }
+ * }
+ *
+ */
+app.get('/api/pcap/getTypes', (req, res) => {
+    sCallback = (data) => {
+        body = [];
+        data["records"].forEach((record) => {
+            body.push({"id":record.get("n.id"),"type":record.get("n.type")});
+        });
+        res.send({"success": true, "results": body});
+    };
+
+    fCallback = (err) => {
+        console.log("Error: ", err);
+        res.send({"success": false, "results": err})
+    };
+
+    neoObj.getTypes(sCallback,fCallback)
+});
+
+/*
+ * Returns a specific type
+ */
+app.get('/api/getType/:type', (req, res) => {
+
+});
+
+/*
+ * Returns all packets for a specific type
+ */
+app.get('/api/getTypePackets/:type', (req, res) => {
+
+});
 
 /***************************************************
  *              API DOCS
@@ -147,3 +217,22 @@ app.get('/docs/api', (req, res) => {
 });
 
 app.use('/docs/api/node_modules', express.static(path.join(__dirname, '/node_modules')));
+
+/***************************************************
+ *              EXIT HANDLERS
+ **************************************************/
+
+process.on('exit', (code) => {
+    neoObj.free();
+    process.exit(code);
+});
+
+process.on('SIGINT', () => {
+    neoObj.free();
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    neoObj.free();
+    process.exit(0);
+});
