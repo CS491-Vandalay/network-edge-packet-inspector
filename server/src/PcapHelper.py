@@ -250,36 +250,3 @@ class Analyser(object):
         json_str = json.dumps(data)
 
         return json_str
-
-        # counter = 0;
-        #
-        # rdpcap comes from scapy and loads in our pcap file
-        # packets = rdpcap('/home/jhohan/CS491/network-edge-packet-inspector/server/src/example/pcap1.pcap')
-        #
-        #
-        # Let's iterate through every packet
-        # for packet in packets:
-        #     counter = counter+1
-        # packet.display()
-        #
-        #     if IP in packet:
-        #     #     packet.summary()
-        #          counter = counter + 1
-        #     else:
-        #         packet.display()
-        #     #
-        #     # # elif  DNS in packet:
-        #     #    packet.display()
-        #     #    counter = counter + 1
-        #     #
-        #     # We're only interested packets with a DNS Round Robin layer
-        #     #if packet.haslayer(DNSRR):
-        #
-        #        # packet.display();
-        #
-        #         # If the an(swer) is a DNSRR, print the name it replied with.
-        #        # if isinstance(packet.an, DNSRR):
-        #           #  print(packet.an.rrname)
-        #
-        # print("total packets = ");
-        # print(counter);
