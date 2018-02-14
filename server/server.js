@@ -170,20 +170,11 @@ app.get('/api/test', (req, res) => {
  *
  */
 app.get('/api/pcap/getTypes', (req, res) => {
-    sCallback = (data) => {
-        body = [];
-        data["records"].forEach((record) => {
-            body.push({"id":record.get("n.id"),"type":record.get("n.type")});
-        });
-        res.send({"success": true, "results": body});
-    };
-
-    fCallback = (err) => {
-        console.log("Error: ", err);
-        res.send({"success": false, "results": err})
-    };
-
-    neoObj.getTypes(sCallback,fCallback)
+    neoObj.getTypes().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err)
+    });
 });
 
 /*
@@ -200,9 +191,44 @@ app.get('/api/getTypePackets/:type', (req, res) => {
 
 });
 
-/***************************************************
+/************************************************************
+ *              PCAP DEVICES
+ ***********************************************************/
+app.get('/api/pcap/getDevices', (req, res) => {
+    neoObj.getAllDevices().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err)
+    });
+});
+
+app.get('/api/pcap/getDeviceByName/:name', (req, res) => {
+    neoObj.getDeviceByName(decodeURIComponent(req.params.name)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err)
+    });
+});
+
+app.get('/api/pcap/getDeviceByIp/:ip', (req, res) => {
+    neoObj.getDeviceByIp(decodeURIComponent(req.params.ip)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err)
+    });
+});
+
+app.get('/api/pcap/getDeviceById/:id', (req, res) => {
+    neoObj.getDeviceById(decodeURIComponent(req.params.id)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err)
+    });
+});
+
+/************************************************************
  *              API DOCS
- **************************************************/
+ ***********************************************************/
 
 app.use(express.static(path.join(__dirname + "/src/docs/static")));
 
