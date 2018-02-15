@@ -62,6 +62,7 @@ module.exports = class Neo {
                 .run('MATCH (n:Device) RETURN n.id, n.name, n.ip')
                 .then((data) => {
                     let body = [];
+                    console.log(data);
                     data["records"].forEach((record) => {
                         body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
                     });
@@ -129,6 +130,34 @@ module.exports = class Neo {
                     resolve({"success": true, "results": body})
                 })
                 .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get types", "err": err})
+                });
+        })
+    }
+
+    saveDevice(body) {
+        console.log("body: ", body);
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+            // Get the next id
+                .run('MATCH (n:Device) RETURN n.id ORDER BY n.id DESC LIMIT 1')
+                .then((data) => {
+                    let lastId = parseInt(data["records"][0].get("n.id"));
+                    let nextId = lastId + 1;
+                    resolve(nextId)
+                }).then((id) => {
+                    session.run('CREATE (n:Device {id: $id, name: $name, ip: $ip) RETURN n.id, n.name, n.ip',
+                        {"id": id + "", "name": body.name, "ip": body.ip}).then((data)=>{
+                        let body = [];
+                        data["records"].forEach((record) => {
+                            body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
+                        });
+                        session.close();
+                        resolve({"success": true, "results": body})
+                    })
+                }).catch((err) => {
                     session.close();
                     reject({"success": false, "msg": "failed to get types", "err": err})
                 });

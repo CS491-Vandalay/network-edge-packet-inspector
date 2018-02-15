@@ -12,10 +12,12 @@ let express = require('express'),
 template = require('pug').compileFile(__dirname + '/src/docs/api-docs/templates/base.pug');
 
 const path = require('path');
+const bodyParser = require('body-parser');
 
 let neoObj = new neoClass();
 
 app.use(logger('dev'));
+app.use(bodyParser.json);
 
 let server = app.listen(8090, () => {
     console.log("Server listening on port 8090");
@@ -224,6 +226,16 @@ app.get('/api/pcap/getDeviceById/:id', (req, res) => {
     }).catch((err) => {
         res.jsonp(err)
     });
+});
+
+// TODO: Not working >.>
+app.post('/api/pcap/addDevice',(req,res)=>{
+    console.log("posting: ", req.body);
+   neoObj.saveDevice(req.body).then((result)=>{
+       res.jsonp(result)
+   }).catch((err)=>{
+       res.jsonp(err)
+   })
 });
 
 /************************************************************
