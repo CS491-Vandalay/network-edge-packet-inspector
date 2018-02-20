@@ -40,10 +40,10 @@ let server = app.listen(8090, () => {
 app.get('/api/doMetric/:metricName', (req, res) => {
 
     // Get all the metrics
-    metricTypes = config.get('metricTypes');
+    let metricTypes = config.get('metricTypes');
 
     // Find the metric requested
-    metric = metricTypes.find(function (m) {
+    let metric = metricTypes.find(function (m) {
         return m["alias"] === req.params.metricName;
     });
 
@@ -54,12 +54,12 @@ app.get('/api/doMetric/:metricName', (req, res) => {
         console.log("Running:", metric["alias"], " with filename:", metric["fileName"]);
 
         // Get the location
-        loc = config.get('metricDir') + "/" + metric["fileName"];
+        let loc = config.get('metricDir') + "/" + metric["fileName"];
 
         // Spawn the child process to run the metric
         const pyTest = spawn('python', [loc]);
 
-        body = '';
+        let body = '';
 
         // put all of stdout into body
         pyTest.stdout.on('data', (data) => {
@@ -240,16 +240,16 @@ app.get('/api/pcap/getDeviceById/:id', (req, res) => {
     });
 });
 
-app.post('/api/pcap/addDevice',(req,res)=>{
-   neoObj.saveDevice(req.body).then((result)=>{
-       res.jsonp(result);
-   }).catch((err)=>{
-       res.jsonp(err);
-   });
+app.post('/api/pcap/addDevice', (req, res) => {
+    neoObj.saveDevice(req.body).then((result) => {
+        res.jsonp(result);
+    }).catch((err) => {
+        res.jsonp(err);
+    });
 });
 
-app.post('/api/pcap/deleteDevice', (req,res)=>{
-    if(req.body["id"]) {
+app.post('/api/pcap/deleteDevice', (req, res) => {
+    if (req.body["id"]) {
         console.log("here");
         neoObj.deleteDevice(req.body["id"]).then((result) => {
             res.jsonp(result);
@@ -258,8 +258,92 @@ app.post('/api/pcap/deleteDevice', (req,res)=>{
         });
     } else {
         err = new Error("id is required to delete a device");
-        res.jsonp({"success":false,"msg":"id is required","err": err})
+        res.jsonp({"success": false, "msg": "id is required", "err": err})
     }
+});
+
+/************************************************************
+ *              PCAP PACKETS
+ ***********************************************************/
+
+app.get('/api/pcap/getPackets', (req, res) => {
+    neoObj.getPackets().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err)
+    });
+});
+
+app.get('/api/pcap/getPacketBySourceIp/:ip', (req, res) => {
+    neoObj.getPacketsBySourceIp(decodeURIComponent(req.body.ip)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketByDestinationIp/:ip', (req, res) => {
+    neoObj.getPacketsByDestinationIp(decodeURIComponent(req.body.ip)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketByPort/:port', (req, res) => {
+    neoObj.getPacketsByPort(decodeURIComponent(req.body.port)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/api/pcap/savePacket', (req, res) => {
+    neoObj.savePacket(req.body).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/api/pcap/savePacketsBulk', (req, res) => {
+    neoObj.savePacketBulk(req.body).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/apip/pcap/deletePacket', (req, res) => {
+    neoObj.deletePacket(req.body["id"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/api/pcap/deletePacketBySourceIp', (req, res) => {
+    neoObj.deletePacketBySourceIp(req.body["sourceIp"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/api/pcap/deletePacketByDestinationIp', (req, res) => {
+    neoObj.deletePacketByDestinationIp(req.body["destinationIp"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/api/pcap/deletePacketByPort', (req, res) => {
+    neoObj.deletePacketByPort(req.body["port"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
 });
 
 /************************************************************
