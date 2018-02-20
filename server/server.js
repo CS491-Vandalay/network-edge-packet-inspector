@@ -7,17 +7,17 @@ let express = require('express'),
     config = require('config'),
     logger = require('morgan'),
     app = express(),
-    neoClass = require('./neo.js');
+    neoClass = require('./neo.js'),
+    bodyParser = require('body-parser');
 
 template = require('pug').compileFile(__dirname + '/src/docs/api-docs/templates/base.pug');
 
 const path = require('path');
-const bodyParser = require('body-parser');
 
 let neoObj = new neoClass();
 
 app.use(logger('dev'));
-app.use(bodyParser.json);
+app.use(bodyParser.json());
 
 let server = app.listen(8090, () => {
     console.log("Server listening on port 8090");
@@ -80,7 +80,7 @@ app.get('/api/doMetric/:metricName', (req, res) => {
             body = JSON.parse(body.split("'").join("\""));
 
             // wrap the results in a json
-            result = {"sucess": true, "results": body};
+            result = {"success": true, "results": body};
 
             // send the response
             res.end(JSON.stringify(result));
@@ -224,18 +224,30 @@ app.get('/api/pcap/getDeviceById/:id', (req, res) => {
     neoObj.getDeviceById(decodeURIComponent(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
-        res.jsonp(err)
+        res.jsonp(err);
     });
 });
 
-// TODO: Not working >.>
 app.post('/api/pcap/addDevice',(req,res)=>{
-    console.log("posting: ", req.body);
    neoObj.saveDevice(req.body).then((result)=>{
-       res.jsonp(result)
+       res.jsonp(result);
    }).catch((err)=>{
-       res.jsonp(err)
-   })
+       res.jsonp(err);
+   });
+});
+
+app.post('/api/pcap/deleteDevice', (req,res)=>{
+    if(req.body["id"]) {
+        console.log("here");
+        neoObj.deleteDevice(req.body["id"]).then((result) => {
+            res.jsonp(result);
+        }).catch((err) => {
+            res.jsonp(err);
+        });
+    } else {
+        err = new Error("id is required to delete a device");
+        res.jsonp({"success":false,"msg":"id is required","err": err})
+    }
 });
 
 /************************************************************

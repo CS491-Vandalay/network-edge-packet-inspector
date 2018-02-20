@@ -137,7 +137,6 @@ module.exports = class Neo {
     }
 
     saveDevice(body) {
-        console.log("body: ", body);
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
@@ -145,10 +144,9 @@ module.exports = class Neo {
                 .run('MATCH (n:Device) RETURN n.id ORDER BY n.id DESC LIMIT 1')
                 .then((data) => {
                     let lastId = parseInt(data["records"][0].get("n.id"));
-                    let nextId = lastId + 1;
-                    resolve(nextId)
+                    return lastId + 1;
                 }).then((id) => {
-                    session.run('CREATE (n:Device {id: $id, name: $name, ip: $ip) RETURN n.id, n.name, n.ip',
+                    session.run('CREATE (n:Device {id: $id, name: $name, ip: $ip}) RETURN n.id, n.name, n.ip',
                         {"id": id + "", "name": body.name, "ip": body.ip}).then((data)=>{
                         let body = [];
                         data["records"].forEach((record) => {
@@ -162,5 +160,23 @@ module.exports = class Neo {
                     reject({"success": false, "msg": "failed to get types", "err": err})
                 });
         })
+    }
+
+    deleteDevice(id){
+        console.log("id:" , id);
+        let session = this.driver.session();
+            return new Promise((resolve, reject) => {
+                session
+                    .run('MATCH (n:Device) WHERE n.id=$id DETACH DELETE n', {"id": id})
+                    .then((data) => {
+                        console.log(data);
+                        session.close();
+                        resolve({"success": true, "results": {}})
+                    })
+                    .catch((err) => {
+                        session.close();
+                        reject({"success": false, "msg": "failed to get types", "err": err})
+                    });
+            })
     }
 };
