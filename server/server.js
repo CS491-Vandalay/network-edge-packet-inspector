@@ -182,8 +182,20 @@ app.get('/api/pcap/getTypes', (req, res) => {
 /*
  * Returns a specific type
  */
-app.get('/api/getType/:type', (req, res) => {
+app.get('/api/pcap/getTypeByName/:name', (req, res) => {
+    neoObj.getTypeByName(decodeURIComponent(req.params.name)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err)
+    });
+});
 
+app.get('/api/pcap/getTypeById/:id', (req, res) => {
+    neoObj.getTypeById(decodeURIComponent(req.params.id)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err)
+    });
 });
 
 /*
