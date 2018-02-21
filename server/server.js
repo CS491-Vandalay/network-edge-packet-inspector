@@ -263,6 +263,57 @@ app.post('/api/pcap/deleteDevice', (req, res) => {
 });
 
 /************************************************************
+ *              PCAP LOCATIONS
+ ***********************************************************/
+app.get('/api/pcap/getLocations', (req, res) => {
+    neoObj.getLocations().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    });
+});
+
+app.get('/api/pcap/getLocationByCountry/:country', (req, res) => {
+    neoObj.getLocationByCountry(req.params.country).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getLocationById/:id', (req, res) => {
+    neoObj.getLocationById(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getDeviceCount/locationId/:id', (req, res) => {
+    neoObj.getNumDeviceFromLocationId(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getDeviceCount/locationCountry/:country', (req, res) => {
+    neoObj.getNumDeviceFromLocationCountry(req.params.country).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getLocationCount', (req, res) => {
+    neoObj.getNumOfCountries().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+/************************************************************
  *              PCAP PACKETS
  ***********************************************************/
 
@@ -307,7 +358,7 @@ app.post('/api/pcap/savePacket', (req, res) => {
 });
 
 app.post('/api/pcap/savePacketsBulk', (req, res) => {
-    neoObj.savePacketBulk(req.body).then((data) => {
+    neoObj.savePacketBulk(req.body["packets"]).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -340,6 +391,14 @@ app.post('/api/pcap/deletePacketByDestinationIp', (req, res) => {
 
 app.post('/api/pcap/deletePacketByPort', (req, res) => {
     neoObj.deletePacketByPort(req.body["port"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPcapCount', (req, res) => {
+    neoObj.getNumOfPackets().then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);

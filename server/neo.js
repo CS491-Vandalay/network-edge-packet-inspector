@@ -408,8 +408,39 @@ module.exports = class Neo {
         })
     }
 
+    // TODO: FIX THIS
     savePacketBulk(packets) {
-
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+            // Get the next id
+                .run('MATCH (n:Packet) RETURN n.id ORDER BY n.id DESC LIMIT 1')
+                .then((data) => {
+                    let lastId = parseInt(data["records"][0].get("n.id"));
+                    return lastId + 1;
+                }).then((id) => {
+                session.run('UNWIND {packets} AS n CREATE (:Packet {id: $id, sourceIp: n.sourceIp, destinationIp: n.destinationIp, port: n.port})',
+                    {
+                        "id": (id += 1) + "",
+                        "packets": packets
+                    }).then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("n.id"),
+                            "sourceIp": record.get("n.sourceIp"),
+                            "destinationIp": record.get("n.destinationIp"),
+                            "port": record.get("n.port")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+            }).catch((err) => {
+                session.close();
+                reject({"success": false, "msg": "failed to save packet", "err": err})
+            });
+        })
     }
 
     deletePacket(id) {
@@ -476,6 +507,173 @@ module.exports = class Neo {
                 .catch((err) => {
                     session.close();
                     reject({"success": false, "msg": "failed to delete packet", "err": err})
+                });
+        })
+    }
+
+    getNumOfPackets() {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Packet) RETURN toFloat(COUNT(n)) as c')
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "count": record.get('c')
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body[0]})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    /************************************************************
+     *
+     *          PCAP LOCATIONS
+     *
+     ***********************************************************/
+
+    getLocations() {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Location) RETURN n.id, n.country')
+                .then((data) => {
+                    let body = [];
+                    console.log(data);
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("n.id"),
+                            "port": record.get("n.country")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getLocationByCountry(country) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Location) WHERE n.country=$country RETURN n.id, n.country', {"country": country})
+                .then((data) => {
+                    let body = [];
+                    console.log(data);
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("n.id"),
+                            "country": record.get("n.country")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getLocationById(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Location) WHERE n.id=$id RETURN n.id, n.country', {"id": id})
+                .then((data) => {
+                    let body = [];
+                    console.log(data);
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("n.id"),
+                            "country": record.get("n.country")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getNumDeviceFromLocationId(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Location)<-[r:locatedIn]-() WHERE n.id=$id RETURN toFloat(COUNT(r)) as c', {"id": id})
+                .then((data) => {
+                    let body = [];
+                    // console.log("r",data["records"][0][["keys"][0]][0]);
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "count": record.get('c')
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body[0]})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getNumDeviceFromLocationCountry(country) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Location)<-[r:locatedIn]-() WHERE n.country=$country RETURN toFloat(COUNT(r)) as c', {"country": country})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "count": record.get('c')
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body[0]})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getNumOfCountries() {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Location) RETURN toFloat(COUNT(n)) as c')
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "count": record.get('c')
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body[0]})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
                 });
         })
     }
