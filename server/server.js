@@ -322,7 +322,7 @@ app.get('/api/pcap/getDeviceCount/locationCountry/:country', (req, res) => {
 });
 
 app.get('/api/pcap/getLocationCount', (req, res) => {
-    neoObj.getNumOfCountries().then((data) => {
+    neoObj.getNumOfLocations().then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -417,6 +417,38 @@ app.get('/api/pcap/getPacketCount', (req, res) => {
     neoObj.getNumOfPackets().then((data) => {
         res.jsonp(data);
     }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getNumPacketsTypeToLocation/:tid/:lid', (req, res) => {
+    neoObj.getNumOfPacketsTypeToLocation(req.params.tid,req.params.lid).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketsFromLocation/:id', (req, res) => {
+    neoObj.getPacketsFromLocation(req.params.id,req.params.lid).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketsToLocation/:id', (req, res) => {
+    neoObj.getPacketsToLocation(req.params.id,req.params.lid).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketSourceLocation/:id', (req,res)=>{
+    neoObj.getSourceLocationOfPacket(req.params.id).then((data)=>{
+        res.jsonp(data);
+    }).catch((err)=>{
         res.jsonp(err);
     })
 });
