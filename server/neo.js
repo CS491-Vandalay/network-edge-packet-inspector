@@ -133,6 +133,28 @@ module.exports = class Neo {
         })
     }
 
+    getNumOfTypes() {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Type) RETURN toFloat(COUNT(n)) as c')
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "count": record.get('c')
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body[0]})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
     /************************************************************
      *
      *          PCAP DEVICES
@@ -258,6 +280,28 @@ module.exports = class Neo {
                 .catch((err) => {
                     session.close();
                     reject({"success": false, "msg": "failed to delete device", "err": err})
+                });
+        })
+    }
+
+    getNumOfDevices() {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Device) RETURN toFloat(COUNT(n)) as c')
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "count": record.get('c')
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body[0]})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
                 });
         })
     }
@@ -677,4 +721,5 @@ module.exports = class Neo {
                 });
         })
     }
+
 };

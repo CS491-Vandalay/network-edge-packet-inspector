@@ -205,6 +205,14 @@ app.get('/api/getTypePackets/:type', (req, res) => {
 
 });
 
+app.get('/api/pcap/getDeviceCount', (req, res) => {
+    neoObj.getNumOfTypes().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
 /************************************************************
  *              PCAP DEVICES
  ***********************************************************/
@@ -260,6 +268,14 @@ app.post('/api/pcap/deleteDevice', (req, res) => {
         err = new Error("id is required to delete a device");
         res.jsonp({"success": false, "msg": "id is required", "err": err})
     }
+});
+
+app.get('/api/pcap/getDeviceCount', (req, res) => {
+    neoObj.getNumOfDevices().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
 });
 
 /************************************************************
@@ -397,7 +413,7 @@ app.post('/api/pcap/deletePacketByPort', (req, res) => {
     })
 });
 
-app.get('/api/pcap/getPcapCount', (req, res) => {
+app.get('/api/pcap/getPacketCount', (req, res) => {
     neoObj.getNumOfPackets().then((data) => {
         res.jsonp(data);
     }).catch((err) => {
