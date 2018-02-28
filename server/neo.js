@@ -155,6 +155,31 @@ module.exports = class Neo {
         })
     }
 
+        getPacketsByType() {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE t.name="text" return p.id, p.sourceIp, p.destinationIp, p.port')
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("p.id"),
+                            "sourceIp": record.get("p.sourceIp"),
+                            "destinationIp": record.get("p.destinationIp"),
+                            "port": record.get("p.port")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
     /************************************************************
      *
      *          PCAP DEVICES

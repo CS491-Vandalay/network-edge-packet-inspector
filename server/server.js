@@ -213,6 +213,14 @@ app.get('/api/pcap/getDeviceCount', (req, res) => {
     })
 });
 
+app.get('/api/pcap/getPacketsByType/:id', (req, res) => {
+    neoObj.getPacketsByType().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
 /************************************************************
  *              PCAP DEVICES
  ***********************************************************/
