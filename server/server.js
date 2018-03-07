@@ -286,6 +286,22 @@ app.get('/api/pcap/getDeviceCount', (req, res) => {
     })
 });
 
+app.get('/api/pcap/getPacketsFromDevice/:id', (req, res) => {
+    neoObj.getPacketsFromDevice(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketsToDevice/:id', (req, res) => {
+    neoObj.getPacketsToDevice(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
 /************************************************************
  *              PCAP LOCATIONS
  ***********************************************************/
@@ -350,7 +366,7 @@ app.get('/api/pcap/getPackets', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketBySourceIp/:ip', (req, res) => {
-    neoObj.getPacketsBySourceIp(decodeURIComponent(req.body.ip)).then((data) => {
+    neoObj.getPacketsBySourceIp(decodeURIComponent(req.params.ip)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -478,6 +494,42 @@ app.get('/docs/api', (req, res) => {
 });
 
 app.use('/docs/api/node_modules', express.static(path.join(__dirname, '/node_modules')));
+
+/***************************************************
+ *              PCAP RELATIONSHIPS
+ **************************************************/
+
+app.post('/api/pcap/createComingFrom', (req, res) => {
+    neoObj.createComingFrom(req.body["packetId"],req.body["deviceId"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/api/pcap/createGoingTo', (req, res) => {
+    neoObj.createGoingTo(req.body["packetId"],req.body["deviceId"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/api/pcap/createTypeOf', (req, res) => {
+    neoObj.createTypeOf(req.body["packetId"],req.body["typeId"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.post('/api/pcap/createLocatedIn', (req, res) => {
+    neoObj.createLocatedIn(req.body["deviceId"],req.body["locationId"]).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
 
 /***************************************************
  *              EXIT HANDLERS
