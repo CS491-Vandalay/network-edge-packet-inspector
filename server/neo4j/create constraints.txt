@@ -1,0 +1,17 @@
+# Get Constraints
+CALL db.constraints
+
+# Drop Constraint
+DROP CONSTRAINT ON (book:Book) ASSERT book.isbn IS UNIQUE
+
+# Unique Property
+CREATE CONSTRAINT ON (book:Book) ASSERT book.isbn IS UNIQUE
+
+# Property Exists
+CREATE CONSTRAINT ON (book:Book) ASSERT exists(book.isbn)
+
+# Relationship Exists
+CREATE CONSTRAINT ON ()-[like:LIKED]-() ASSERT exists(like.day)
+
+# Node Key aka composite key
+CREATE CONSTRAINT ON (n:Person) ASSERT (n.firstname, n.surname) IS NODE KEY
