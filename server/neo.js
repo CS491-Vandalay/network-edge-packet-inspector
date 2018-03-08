@@ -192,7 +192,7 @@ module.exports = class Neo {
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
+                        body.push({"id": record.get("n.id"), "name": record.get("n.name"), "ip": record.get("n.ip")});
                     });
                     session.close();
                     resolve({"success": true, "results": body})

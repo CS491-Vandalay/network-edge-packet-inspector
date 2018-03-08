@@ -8,7 +8,8 @@ let express = require('express'),
     logger = require('morgan'),
     app = express(),
     neoClass = require('./neo.js'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    cors = require('cors');
 
 template = require('pug').compileFile(__dirname + '/src/docs/api-docs/templates/base.pug');
 
@@ -18,6 +19,7 @@ let neoObj = new neoClass();
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
+app.use(cors());
 
 let server = app.listen(8090, () => {
     console.log("Server listening on port 8090");
