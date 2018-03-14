@@ -9,6 +9,7 @@ module.exports = class Neo {
     constructor() {
         let uri = config.get("neo4jDb");
         // TODO: Encrypt/Decrypt password
+        console.log(config.get("neoLogin"), config.get("neoPass"))
         this.driver = neo4j.driver(uri, neo4j.auth.basic(config.get('neoLogin'), config.get('neoPass')));
         this.session = this.driver.session();
     }

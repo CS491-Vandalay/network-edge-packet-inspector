@@ -12,6 +12,6 @@
   "metricDir": "/home/mrodger4/workspaces/CS491/network-edge-packet-inspector/server/Metrics/",
 
   "neo4jDb":"bolt://localhost:7687",
-  "neoLogin":"neo4j",
-  "neoPass":"neo4j"
+  "neoLogin":"neAdmin",
+  "neoPass":"neAdmin?18"
 }

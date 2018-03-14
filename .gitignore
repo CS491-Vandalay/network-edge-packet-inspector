@@ -107,5 +107,3 @@ ENV/
 node_modules/*
 server/node_modules/*
 server/package-lock.json
-server/config/default.json
-server/src/Server.properties
