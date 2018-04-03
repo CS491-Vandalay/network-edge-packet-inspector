@@ -2,8 +2,21 @@
   min-width: 200px;
   max-width: 200px;
   height: 100vh;
+  width: 20%;
 }
 
 .wrapper {
   display: flex;
+}
+
+.main {
+  background-color: rgb(18, 59, 34);
+  color: rgb(255, 255, 255);
+}
+
+.grid {
+  background-color: rgb(8, 81, 36);
+  padding-left: 20px;
+  margin-left: -50px;
+  width: 100%;
 }

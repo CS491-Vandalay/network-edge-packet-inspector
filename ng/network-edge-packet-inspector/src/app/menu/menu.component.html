@@ -1,5 +1,7 @@
 <nav>
-  <div><a routerLinkActive="active" routerLink="/packets">Packets</a></div>
-  <div><a routerLinkActive="active" routerLink="/devices">Devices</a></div>
+  <div *ngFor="let route of routeList">
+    <div class="menuItem" routerLinkActive="active" routerLink="/{{route}}"><a>{{route}}</a></div>
+    <hr class="menuItemSeparator"/>
+  </div>
 </nav>
 

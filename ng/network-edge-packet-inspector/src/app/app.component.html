@@ -1,10 +1,12 @@
-<div class="wrapper">
-  <nav id="sidebar">
-    <div class="sidebar-header">
-      <app-menu></app-menu>
+<div class="main">
+  <div class="wrapper">
+    <nav id="sidebar">
+      <div class="sidebar-header">
+        <app-menu></app-menu>
+      </div>
+    </nav>
+    <div id="content" class="grid">
+      <router-outlet></router-outlet>
     </div>
-  </nav>
-  <div id="content">
-    <router-outlet></router-outlet>
   </div>
 </div>

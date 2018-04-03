@@ -7,6 +7,11 @@ import { Component, OnInit } from '@angular/core';
 })
 export class MenuComponent implements OnInit {
 
+  private routeList = [
+    "Packets",
+    "Devices"
+  ]
+
   constructor() { }
 
   ngOnInit() {

@@ -10,9 +10,9 @@ import {DataServiceService} from "./data-service.service";
 import {RouterModule, Routes} from "@angular/router";
 
 const appRoutes: Routes = [
-  {path: 'packets', component: PacketGridComponent},
-  {path: 'devices', component: DeviceGridComponent},
-  {path: '', redirectTo: 'packets', pathMatch: "full"}
+  {path: 'Packets', component: PacketGridComponent},
+  {path: 'Devices', component: DeviceGridComponent},
+  {path: '', redirectTo: 'Packets', pathMatch: "full"}
 ];
 
 @NgModule({
