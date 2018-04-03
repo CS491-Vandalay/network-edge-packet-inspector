@@ -1,18 +1,36 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {BrowserModule} from "@angular/platform-browser";
+import {NgModule} from "@angular/core";
+import {AppComponent} from "./app.component";
+import {MenuComponent} from "./menu/menu.component";
+import {PacketGridComponent} from "./packet-grid/packet-grid.component";
+import {DeviceGridComponent} from "./device-grid/device-grid.component";
+import {HttpClientModule} from "@angular/common/http";
+import {AgGridModule} from "ag-grid-angular";
+import {DataServiceService} from "./data-service.service";
+import {RouterModule, Routes} from "@angular/router";
 
-
-import { AppComponent } from './app.component';
-
+const appRoutes: Routes = [
+  {path: 'packets', component: PacketGridComponent},
+  {path: 'devices', component: DeviceGridComponent},
+  {path: '', redirectTo: 'packets', pathMatch: "full"}
+];
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    MenuComponent,
+    PacketGridComponent,
+    DeviceGridComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    HttpClientModule,
+    AgGridModule.withComponents([]),
+    RouterModule.forRoot(appRoutes, {enableTracing: true})
   ],
-  providers: [],
+  providers: [DataServiceService],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+
+export class AppModule {
+}

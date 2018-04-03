@@ -1,0 +1,15 @@
+<div [hidden]="loaded">LOADING...</div>
+<div [hidden]="!loaded">
+  <h1>Devices</h1>
+  <ag-grid-angular
+    style="width: 1000px; height: 400px;"
+    class="ag-theme-blue"
+    [enableSorting]="true"
+    [enableFilter]="true"
+    [rowData]="deviceData"
+    [columnDefs]="deviceColumns"
+    [gridOptions]="gridOptions"
+    (gridReady)="onGridReady($event)">
+  </ag-grid-angular>
+</div>
+
