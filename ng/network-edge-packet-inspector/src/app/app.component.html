@@ -1,12 +1,17 @@
-<div class="main">
-  <div class="wrapper">
-    <nav id="sidebar">
-      <div class="sidebar-header">
-        <app-menu></app-menu>
+<mat-sidenav-container style="background-color:darkgrey;">
+  <mat-sidenav
+    style="background-color:deepskyblue;"
+    mode="side"
+    [fixedInViewport]="true"
+    opened>
+    <div *ngFor="let route of routeList">
+      <div>
+        <button mat-button routerLinkActive="active" routerLink="/{{route}}">{{route}}</button>
       </div>
-    </nav>
-    <div id="content" class="grid">
-      <router-outlet></router-outlet>
+      <mat-divider></mat-divider>
     </div>
-  </div>
-</div>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

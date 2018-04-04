@@ -1,15 +1,15 @@
 <div [hidden]="loaded">LOADING...</div>
 <div [hidden]="!loaded">
-  <h1>Packets</h1>
-  <button mat-button>View Packet</button>
+  <h1>Type</h1>
+  <button mat-button>View Type</button>
   <button mat-button>View Relationships</button>
   <ag-grid-angular
     style="width: 1000px; height: 400px;"
     class="ag-theme-blue"
     [enableSorting]="true"
     [enableFilter]="true"
-    [rowData]="packetData"
-    [columnDefs]="packetColumns"
+    [rowData]="typeData"
+    [columnDefs]="typeColumns"
     [gridOptions]="gridOptions"
     (gridReady)="onGridReady($event)">
   </ag-grid-angular>
