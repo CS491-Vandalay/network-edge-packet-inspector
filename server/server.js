@@ -304,6 +304,23 @@ app.get('/api/pcap/getPacketsToDevice/:id', (req, res) => {
     })
 });
 
+app.get('/api/pcap/getDeviceByPacket/:id', (req, res) => {
+    neoObj.getDevicesForPacketId(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getDestinationDeviceForPacket/:id', (req, res) => {
+    neoObj.getDestinationDeviceForPacket(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+
 /************************************************************
  *              PCAP LOCATIONS
  ***********************************************************/
@@ -355,6 +372,22 @@ app.get('/api/pcap/getLocationCount', (req, res) => {
     })
 });
 
+app.get('/api/pcap/getDestinationOfPacket/:id', (req, res) => {
+    neoObj.getDestinationLocationOfPacket(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getSourceOfPacket/:id', (req, res) => {
+    neoObj.getSourceLocationOfPacket(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
 /************************************************************
  *              PCAP PACKETS
  ***********************************************************/
@@ -385,6 +418,14 @@ app.get('/api/pcap/getPacketByDestinationIp/:ip', (req, res) => {
 
 app.get('/api/pcap/getPacketByPort/:port', (req, res) => {
     neoObj.getPacketsByPort(decodeURIComponent(req.body.port)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketType/:id', (req, res) => {
+    neoObj.getPacketType(decodeURIComponent(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
