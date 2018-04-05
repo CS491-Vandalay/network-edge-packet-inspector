@@ -18,7 +18,9 @@ export class LocationGridComponent implements OnInit {
   constructor(private dataService: DataServiceService) { }
 
   ngOnInit() {
-    this.gridOptions= <GridOptions>{};
+    this.gridOptions= <GridOptions>{
+      rowSelection: 'single'
+    };
     this.locationData = [];
 
     // Columns for the ag grid

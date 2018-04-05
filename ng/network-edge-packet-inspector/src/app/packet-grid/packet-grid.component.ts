@@ -18,7 +18,9 @@ export class PacketGridComponent implements OnInit {
   constructor(private dataService: DataServiceService) { }
 
   ngOnInit() {
-    this.gridOptions= <GridOptions>{};
+    this.gridOptions= <GridOptions>{
+      rowSelection: 'single'
+    };
     this.packetData = [];
 
     // Columns for the ag grid

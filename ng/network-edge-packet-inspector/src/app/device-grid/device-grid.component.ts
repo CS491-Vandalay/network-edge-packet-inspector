@@ -17,7 +17,9 @@ export class DeviceGridComponent implements OnInit {
   constructor(private dataService: DataServiceService) { }
 
   ngOnInit() {
-    this.gridOptions= <GridOptions>{};
+    this.gridOptions= <GridOptions>{
+      rowSelection: 'single'
+    };
     this.deviceData = [];
 
     // Columns for the ag grid

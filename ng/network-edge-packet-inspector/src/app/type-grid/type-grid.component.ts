@@ -18,7 +18,9 @@ export class TypeGridComponent implements OnInit {
   constructor(private dataService: DataServiceService) { }
 
   ngOnInit() {
-    this.gridOptions= <GridOptions>{};
+    this.gridOptions= <GridOptions>{
+      rowSelection: 'single'
+    };
     this.typeData = [];
 
     // Columns for the ag grid
