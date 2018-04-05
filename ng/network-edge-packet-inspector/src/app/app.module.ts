@@ -1,14 +1,18 @@
 import {BrowserModule} from "@angular/platform-browser";
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NgModule} from "@angular/core";
-import {MatButtonModule, MatSidenavModule} from "@angular/material";
+import {MatButtonModule, MatSidenavModule, MatDialogModule} from "@angular/material";
 import {MatDividerModule} from '@angular/material/divider';
+import {MatGridListModule} from '@angular/material/grid-list';
 import {AppComponent} from "./app.component";
-import {MenuComponent} from "./menu/menu.component";
 import {PacketGridComponent} from "./packet-grid/packet-grid.component";
+import {PacketGridDialogComponent} from "./packet-grid/dialog/packet-grid-dialog.component";
 import {DeviceGridComponent} from "./device-grid/device-grid.component";
+import {DeviceGridDialogComponent} from "./device-grid/dialog/device-grid-dialog.component";
 import {TypeGridComponent} from "./type-grid/type-grid.component";
+import {TypeGridDialogComponent} from "./type-grid/dialog/type-grid-dialog.component";
 import {LocationGridComponent} from "./location-grid/location-grid.component";
+import {LocationGridDialogComponent} from "./location-grid/dialog/location-grid-dialog.component";
 import {HttpClientModule} from "@angular/common/http";
 import {AgGridModule} from "ag-grid-angular";
 import {DataServiceService} from "./data-service.service";
@@ -25,11 +29,14 @@ const appRoutes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
-    MenuComponent,
     PacketGridComponent,
+    PacketGridDialogComponent,
     DeviceGridComponent,
+    DeviceGridDialogComponent,
     TypeGridComponent,
-    LocationGridComponent
+    TypeGridDialogComponent,
+    LocationGridComponent,
+    LocationGridDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -38,11 +45,19 @@ const appRoutes: Routes = [
     MatButtonModule,
     MatSidenavModule,
     MatDividerModule,
+    MatDialogModule,
+    MatGridListModule,
     AgGridModule.withComponents([]),
     RouterModule.forRoot(appRoutes, {enableTracing: true})
   ],
   providers: [DataServiceService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents:[
+    DeviceGridDialogComponent,
+    LocationGridDialogComponent,
+    PacketGridDialogComponent,
+    TypeGridDialogComponent
+  ]
 })
 
 export class AppModule {

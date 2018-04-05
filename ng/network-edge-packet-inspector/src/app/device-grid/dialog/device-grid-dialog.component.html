@@ -1,18 +1,13 @@
-<div [hidden]="loaded">LOADING...</div>
-<div [hidden]="!loaded">
-  <h1>Devices</h1>
-  <button mat-button [disabled]="!rowSelected" (click)="openDevice()">View Device</button>
-  <button mat-button [disabled]="!rowSelected" >View Packets</button>
-  <ag-grid-angular
-    style="width: 1000px; height: 400px;"
-    class="ag-theme-blue"
-    [enableSorting]="true"
-    [enableFilter]="true"
-    [rowData]="deviceData"
-    [columnDefs]="deviceColumns"
-    [gridOptions]="gridOptions"
-    (gridReady)="onGridReady($event)"
-    (rowSelected)="enableButtons()">
-  </ag-grid-angular>
+<h1>Device</h1>
+<div style="width:50%">
+<mat-grid-list cols="3" rowHeight="20px">
+  <mat-grid-tile *ngFor="let tile of tiles"
+                 [colspan]="1"
+                 [rowspan]="1"
+                 >{{tile.label}}: {{tile.data}}
+  </mat-grid-tile>
+</mat-grid-list>
 </div>
-
+<div>
+  <h2>More stuff</h2>
+</div>

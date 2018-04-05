@@ -1,8 +1,8 @@
 <div [hidden]="loaded">LOADING...</div>
 <div [hidden]="!loaded">
   <h1>Devices</h1>
-  <button mat-button>View Device</button>
-  <button mat-button>View Relationships</button>
+  <button mat-button [disabled]="!rowSelected" (click)="openDialog()">View Device</button>
+  <button mat-button [disabled]="!rowSelected" >View Packets</button>
   <ag-grid-angular
     style="width: 1000px; height: 400px;"
     class="ag-theme-blue"
@@ -11,7 +11,8 @@
     [rowData]="deviceData"
     [columnDefs]="deviceColumns"
     [gridOptions]="gridOptions"
-    (gridReady)="onGridReady($event)">
+    (gridReady)="onGridReady($event)"
+    (rowSelected)="enableButtons()">
   </ag-grid-angular>
 </div>
 

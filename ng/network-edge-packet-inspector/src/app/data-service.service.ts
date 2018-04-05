@@ -23,6 +23,11 @@ export class DataServiceService {
     return this.http.get("http://localhost:8090/api/pcap/getLocations")
   }
 
+  getLocationByDeviceId(id: string){
+    console.log("Getting location of device: ", id);
+    return this.http.get("http://localhost:8090/api/pcap/getDeviceLocation/"+encodeURIComponent(id))
+  }
+
   getTypes(): Observable<any> {
     console.log("Getting locations");
     return this.http.get("http://localhost:8090/api/pcap/getTypes")
