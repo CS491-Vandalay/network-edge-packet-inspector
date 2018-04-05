@@ -249,11 +249,31 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device) WHERE n.id=$id RETURN n.id, n.name, n.ip', {"id": id})
+                .run('MATCH (n:Device) WHERE n.id=$id RETURN n.id, n.name, n.ip', {"id": ""+id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get types", "err": err})
+                });
+        })
+    }
+
+    getDeviceLocation(deviceId) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Device)-[]-(l:Location) WHERE n.id=$id RETURN l.id, l.country', {"id": ""+deviceId})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({"id": record.get("l.id"), "type": record.get("l.country")});
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -815,11 +835,16 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device)-[r]-(p:Packet) WHERE p.id=$id RETURN TYPE(r) as direction, n.id, n.name, n.ip', {"id": ""+packetID})
+                .run('MATCH (n:Device)-[r]-(p:Packet) WHERE p.id=$id RETURN TYPE(r) as direction, n.id, n.name, n.ip', {"id": "" + packetID})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip"), "direction":record.get("direction")});
+                        body.push({
+                            "id": record.get("n.id"),
+                            "type": record.get("n.name"),
+                            "ip": record.get("n.ip"),
+                            "direction": record.get("direction")
+                        });
                     });
                     session.close();
                     resolve({"success": true, "results": body})
