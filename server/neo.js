@@ -155,6 +155,30 @@ module.exports = class Neo {
         })
     }
 
+    getNumTypesPerDevice(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('Match (d:Device)-[]-(p:Packet)-[:typeOf]-(t:Type) where d.id=$id return t.name, toFloat(count(t)) as c', {'id': "" + id})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "name": record.get("t.name"),
+                            "count": record.get('c')
+                        });
+                    });
+                    console.log("body:",body);
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get type count", "err": err})
+                });
+        })
+    }
+
     getPacketsByType() {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
@@ -249,7 +273,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device) WHERE n.id=$id RETURN n.id, n.name, n.ip', {"id": ""+id})
+                .run('MATCH (n:Device) WHERE n.id=$id RETURN n.id, n.name, n.ip', {"id": "" + id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -269,11 +293,14 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device)-[]-(l:Location) WHERE n.id=$id RETURN l.id, l.country', {"id": ""+deviceId})
+                .run('MATCH (n:Device)-[]-(l:Location) WHERE n.id=$id RETURN l.id, l.country', {"id": "" + deviceId})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("l.id"), "type": record.get("l.country")});
+                        body.push({
+                            "id": record.get("l.id"),
+                            "country": record.get("l.country")
+                        });
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -361,7 +388,8 @@ module.exports = class Neo {
                             "id": record.get("p.id"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port")
+                            "port": record.get("p.port"),
+                            "direction": "From"
                         });
                     });
                     session.close();
@@ -386,7 +414,8 @@ module.exports = class Neo {
                             "id": record.get("p.id"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port")
+                            "port": record.get("p.port"),
+                            "direction": "To"
                         });
                     });
                     session.close();

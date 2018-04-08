@@ -13,6 +13,16 @@ export class DataServiceService {
     return this.http.get("http://localhost:8090/api/pcap/getPackets")
   }
 
+  getPacketsFromDevice(id: string): Observable<any>{
+    console.log("Getting packets for device id: ", id);
+    return this.http.get("http://localhost:8090/api/pcap/getPacketsFromDevice/"+id)
+  }
+
+  getPacketsToDevice(id: string): Observable<any>{
+    console.log("Getting packets for device id: ", id);
+    return this.http.get("http://localhost:8090/api/pcap/getPacketsToDevice/"+id)
+  }
+
   getDevices(): Observable<any> {
     console.log("Getting devices");
     return this.http.get("http://localhost:8090/api/pcap/getDevices")
@@ -31,5 +41,10 @@ export class DataServiceService {
   getTypes(): Observable<any> {
     console.log("Getting locations");
     return this.http.get("http://localhost:8090/api/pcap/getTypes")
+  }
+
+  getTypesForDevice(id: string){
+    console.log("Getting types for device: ", id);
+    return this.http.get("http://localhost:8090/api/pcap/getTypeCountForDevice/"+encodeURIComponent(id));
   }
 }

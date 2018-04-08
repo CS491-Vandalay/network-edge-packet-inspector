@@ -30,8 +30,7 @@ export class DeviceGridComponent implements OnInit {
     // Columns for the ag grid
     this.deviceColumns = [{headerName: "Id", field: "id"},
       {headerName: "IP", field: "ip"},
-      {headerName: "Name", field: "name"},
-      {headerName: "Location", field: "location"}];
+      {headerName: "Name", field: "name"}];
 
 
     this.dataService.getDevices().subscribe((data) => {
@@ -39,6 +38,7 @@ export class DeviceGridComponent implements OnInit {
       for (let v of data["results"]) {
         this.deviceData.push(v);
       }
+
 
       // Update the ag-grid
       this.gridOptions.api.setRowData(this.deviceData);
@@ -48,14 +48,13 @@ export class DeviceGridComponent implements OnInit {
     });
   }
 
-  openDialog() {
+  openDialog(button: string) {
     let selected = this.gridOptions.api.getSelectedNodes();
     this.dialogRef = this.dialog.open(DeviceGridDialogComponent, {
       width: "90%",
       height: "80%",
-      data: {data: selected}
+      data: {data: selected, mode: button}
     });
-    console.log(selected);
   }
 
   enableButtons() {

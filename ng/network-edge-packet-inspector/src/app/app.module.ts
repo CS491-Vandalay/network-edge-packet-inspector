@@ -48,7 +48,7 @@ const appRoutes: Routes = [
     MatDialogModule,
     MatGridListModule,
     AgGridModule.withComponents([]),
-    RouterModule.forRoot(appRoutes, {enableTracing: true})
+    RouterModule.forRoot(appRoutes, {})
   ],
   providers: [DataServiceService],
   bootstrap: [AppComponent],

@@ -215,6 +215,15 @@ app.get('/api/pcap/getDeviceCount', (req, res) => {
     })
 });
 
+app.get('/api/pcap/getTypeCountForDevice/:id',(req,res)=>{
+    neoObj.getNumTypesPerDevice(decodeURIComponent(req.params.id)).then((data)=>{
+        res.jsonp(data);
+    }).catch((err)=>{
+        console.log(err);
+        res.jsonp(err);
+    })
+});
+
 app.get('/api/pcap/getPacketsByType/:id', (req, res) => {
     neoObj.getPacketsByType().then((data) => {
         res.jsonp(data);
@@ -264,6 +273,14 @@ app.get('/api/pcap/getDeviceLocation/:id', (req, res) => {
     }).catch((err) => {
         res.jsonp(err);
     });
+});
+
+app.get('/api/pcap/getDevicesWithLocation/', (req, res) => {
+    neoObj.getDevicesWithLocation().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
 });
 
 app.post('/api/pcap/addDevice', (req, res) => {
@@ -599,4 +616,8 @@ process.on('SIGINT', () => {
 process.on('SIGTERM', () => {
     neoObj.free();
     process.exit(0);
+});
+
+process.on('uncaughtException', function (exception) {
+    console.log(exception);
 });
