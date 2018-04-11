@@ -1,20 +1,13 @@
-def get_locs():
-    """Return locations (latitude, longitude) for anonymous users."""
-    # All IP addresses from anonymous users
-    locs = []
-    if current_app.config['GEO']:
-        sql = '''SELECT DISTINCT(user_ip) FROM task_run
-                 WHERE user_ip IS NOT NULL;'''
-        results = session.execute(sql)
+import pygeoip
 
-        geolite = current_app.root_path + '/../dat/GeoLiteCity.dat'
-        gic = pygeoip.GeoIP(geolite)
-        for row in results:
-            loc = gic.record_by_addr(row.user_ip)
-            if loc is None:
-                loc = {}
-            if (len(loc.keys()) == 0):
-                loc['latitude'] = 0
-                loc['longitude'] = 0
-            locs.append(dict(loc=loc))
-    return locs 
+#gi = pygeoip.GeoIP('GeoLiteCity.dat')
+#print gi.country_code_by_addr('64.233.161.99')
+#print gi.region_by_addr('14.139.61.12')
+#print gi.region_by_name('apple.com')
+#print gi.record_by_addr('14.139.61.12')
+# I don't know why this one does work
+#print gi.org_by_name('dell.com')
+
+def lookUpIP(ip):
+    gi = pygeoip.GeoIP('GeoLiteCity.dat')
+    return gi.record_by_addr(ip)
