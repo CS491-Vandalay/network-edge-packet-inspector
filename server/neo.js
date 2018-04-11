@@ -155,6 +155,30 @@ module.exports = class Neo {
         })
     }
 
+    getNumTypesPerDevice(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('Match (d:Device)-[]-(p:Packet)-[:typeOf]-(t:Type) where d.id=$id return t.name, toFloat(count(t)) as c', {'id': "" + id})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "name": record.get("t.name"),
+                            "count": record.get('c')
+                        });
+                    });
+                    console.log("body:",body);
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get type count", "err": err})
+                });
+        })
+    }
+
     getPacketsByType() {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
@@ -249,11 +273,34 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device) WHERE n.id=$id RETURN n.id, n.name, n.ip', {"id": id})
+                .run('MATCH (n:Device) WHERE n.id=$id RETURN n.id, n.name, n.ip', {"id": "" + id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get types", "err": err})
+                });
+        })
+    }
+
+    getDeviceLocation(deviceId) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Device)-[]-(l:Location) WHERE n.id=$id RETURN l.id, l.country', {"id": "" + deviceId})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("l.id"),
+                            "country": record.get("l.country")
+                        });
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -333,7 +380,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device)-[:comingFrom]->(p) WHERE n.id=$id RETURN p.id, p.sourceIp, p.destinationIp, p.port',{"id":id+""})
+                .run('MATCH (n:Device)-[:comingFrom]->(p) WHERE n.id=$id RETURN p.id, p.sourceIp, p.destinationIp, p.port', {"id": id + ""})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -341,7 +388,8 @@ module.exports = class Neo {
                             "id": record.get("p.id"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port")
+                            "port": record.get("p.port"),
+                            "direction": "From"
                         });
                     });
                     session.close();
@@ -358,7 +406,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p)-[:goingTo]->(d:Device) WHERE d.id=$id RETURN p.id, p.sourceIp, p.destinationIp, p.port',{"id":id+""})
+                .run('MATCH (p)-[:goingTo]->(d:Device) WHERE d.id=$id RETURN p.id, p.sourceIp, p.destinationIp, p.port', {"id": id + ""})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -366,7 +414,56 @@ module.exports = class Neo {
                             "id": record.get("p.id"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port")
+                            "port": record.get("p.port"),
+                            "direction": "To"
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get types", "err": err})
+                });
+        })
+    }
+
+    getOriginDeviceForPacket(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (p:Packet)-[:goingTo]->(d:Device) WHERE p.id=$id return d.id, d.ip, d.name', {"id": id + ""})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("d.id"),
+                            "ip": record.get("d.ip"),
+                            "name": record.get("d.name")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get types", "err": err})
+                });
+        })
+    }
+
+    getDestinationDeviceForPacket(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (p:Packet)<-[:comingFrom]-(d:Device) WHERE p.id=$id return d.id, d.ip, d.name', {"id": id + ""})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("d.id"),
+                            "ip": record.get("d.ip"),
+                            "name": record.get("d.name")
                         });
                     });
                     session.close();
@@ -473,6 +570,29 @@ module.exports = class Neo {
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
                             "port": record.get("n.port")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getPacketType(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (p:Packet)-[:typeOf]->(t:Type) WHERE p.id=$id RETURN t.id, t.name', {"id": id})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("t.id"),
+                            "name": record.get("t.name")
                         });
                     });
                     session.close();
@@ -740,6 +860,31 @@ module.exports = class Neo {
         })
     }
 
+    getDevicesForPacketId(packetID) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Device)-[r]-(p:Packet) WHERE p.id=$id RETURN TYPE(r) as direction, n.id, n.name, n.ip', {"id": "" + packetID})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("n.id"),
+                            "type": record.get("n.name"),
+                            "ip": record.get("n.ip"),
+                            "direction": record.get("direction")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get origin device", "err": err})
+                });
+        })
+    }
+
     /************************************************************
      *
      *          PCAP LOCATIONS
@@ -756,7 +901,7 @@ module.exports = class Neo {
                     data["records"].forEach((record) => {
                         body.push({
                             "id": record.get("n.id"),
-                            "port": record.get("n.country")
+                            "country": record.get("n.country")
                         });
                     });
                     session.close();
@@ -877,6 +1022,52 @@ module.exports = class Neo {
                 .catch((err) => {
                     session.close();
                     reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getDestinationLocationOfPacket(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (p:Packet)-[:goingTo]-()-[:locatedIn]->(l) WHERE p.id=$id RETURN l.id, l.country', {"id": id})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("l.id"),
+                            "country": record.get("l.country")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get Location", "err": err})
+                });
+        })
+    }
+
+    getSourceLocationOfPacket(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (p:Packet)-[:comingFrom]-()-[:locatedIn]->(l) WHERE p.id=$id RETURN l.id, l.country', {"id": id})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("l.id"),
+                            "country": record.get("l.country")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get Location", "err": err})
                 });
         })
     }
@@ -1041,5 +1232,4 @@ module.exports = class Neo {
         });
     }
 
-}
-;
+};

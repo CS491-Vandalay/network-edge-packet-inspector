@@ -100,11 +100,11 @@ app.get('/api/doMetric/:metricName', (req, res) => {
  *      {
  *          "alias":"typeOne",
  *          "fileName":"pyTest.py"
-*       },
+ *       },
  *      {
  *          "alias":"typeTwo",
  *          "fileName":"pyTest2.py"
-*       }
+ *       }
  *   ]
  * }
  */
@@ -215,6 +215,15 @@ app.get('/api/pcap/getDeviceCount', (req, res) => {
     })
 });
 
+app.get('/api/pcap/getTypeCountForDevice/:id',(req,res)=>{
+    neoObj.getNumTypesPerDevice(decodeURIComponent(req.params.id)).then((data)=>{
+        res.jsonp(data);
+    }).catch((err)=>{
+        console.log(err);
+        res.jsonp(err);
+    })
+});
+
 app.get('/api/pcap/getPacketsByType/:id', (req, res) => {
     neoObj.getPacketsByType().then((data) => {
         res.jsonp(data);
@@ -256,6 +265,22 @@ app.get('/api/pcap/getDeviceById/:id', (req, res) => {
     }).catch((err) => {
         res.jsonp(err);
     });
+});
+
+app.get('/api/pcap/getDeviceLocation/:id', (req, res) => {
+    neoObj.getDeviceLocation(decodeURIComponent(req.params.id)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    });
+});
+
+app.get('/api/pcap/getDevicesWithLocation/', (req, res) => {
+    neoObj.getDevicesWithLocation().then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
 });
 
 app.post('/api/pcap/addDevice', (req, res) => {
@@ -303,6 +328,23 @@ app.get('/api/pcap/getPacketsToDevice/:id', (req, res) => {
         res.jsonp(err);
     })
 });
+
+app.get('/api/pcap/getDeviceByPacket/:id', (req, res) => {
+    neoObj.getDevicesForPacketId(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getDestinationDeviceForPacket/:id', (req, res) => {
+    neoObj.getDestinationDeviceForPacket(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
 
 /************************************************************
  *              PCAP LOCATIONS
@@ -355,6 +397,22 @@ app.get('/api/pcap/getLocationCount', (req, res) => {
     })
 });
 
+app.get('/api/pcap/getDestinationOfPacket/:id', (req, res) => {
+    neoObj.getDestinationLocationOfPacket(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getSourceOfPacket/:id', (req, res) => {
+    neoObj.getSourceLocationOfPacket(req.params.id).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
 /************************************************************
  *              PCAP PACKETS
  ***********************************************************/
@@ -385,6 +443,14 @@ app.get('/api/pcap/getPacketByDestinationIp/:ip', (req, res) => {
 
 app.get('/api/pcap/getPacketByPort/:port', (req, res) => {
     neoObj.getPacketsByPort(decodeURIComponent(req.body.port)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketType/:id', (req, res) => {
+    neoObj.getPacketType(decodeURIComponent(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -448,7 +514,7 @@ app.get('/api/pcap/getPacketCount', (req, res) => {
 });
 
 app.get('/api/pcap/getNumPacketsTypeToLocation/:tid/:lid', (req, res) => {
-    neoObj.getNumOfPacketsTypeToLocation(req.params.tid,req.params.lid).then((data) => {
+    neoObj.getNumOfPacketsTypeToLocation(req.params.tid, req.params.lid).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -456,7 +522,7 @@ app.get('/api/pcap/getNumPacketsTypeToLocation/:tid/:lid', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketsFromLocation/:id', (req, res) => {
-    neoObj.getPacketsFromLocation(req.params.id,req.params.lid).then((data) => {
+    neoObj.getPacketsFromLocation(req.params.id, req.params.lid).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -464,17 +530,17 @@ app.get('/api/pcap/getPacketsFromLocation/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketsToLocation/:id', (req, res) => {
-    neoObj.getPacketsToLocation(req.params.id,req.params.lid).then((data) => {
+    neoObj.getPacketsToLocation(req.params.id, req.params.lid).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
     })
 });
 
-app.get('/api/pcap/getPacketSourceLocation/:id', (req,res)=>{
-    neoObj.getSourceLocationOfPacket(req.params.id).then((data)=>{
+app.get('/api/pcap/getPacketSourceLocation/:id', (req, res) => {
+    neoObj.getSourceLocationOfPacket(req.params.id).then((data) => {
         res.jsonp(data);
-    }).catch((err)=>{
+    }).catch((err) => {
         res.jsonp(err);
     })
 });
@@ -502,7 +568,7 @@ app.use('/docs/api/node_modules', express.static(path.join(__dirname, '/node_mod
  **************************************************/
 
 app.post('/api/pcap/createComingFrom', (req, res) => {
-    neoObj.createComingFrom(req.body["packetId"],req.body["deviceId"]).then((data) => {
+    neoObj.createComingFrom(req.body["packetId"], req.body["deviceId"]).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -510,7 +576,7 @@ app.post('/api/pcap/createComingFrom', (req, res) => {
 });
 
 app.post('/api/pcap/createGoingTo', (req, res) => {
-    neoObj.createGoingTo(req.body["packetId"],req.body["deviceId"]).then((data) => {
+    neoObj.createGoingTo(req.body["packetId"], req.body["deviceId"]).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -518,7 +584,7 @@ app.post('/api/pcap/createGoingTo', (req, res) => {
 });
 
 app.post('/api/pcap/createTypeOf', (req, res) => {
-    neoObj.createTypeOf(req.body["packetId"],req.body["typeId"]).then((data) => {
+    neoObj.createTypeOf(req.body["packetId"], req.body["typeId"]).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -526,7 +592,7 @@ app.post('/api/pcap/createTypeOf', (req, res) => {
 });
 
 app.post('/api/pcap/createLocatedIn', (req, res) => {
-    neoObj.createLocatedIn(req.body["deviceId"],req.body["locationId"]).then((data) => {
+    neoObj.createLocatedIn(req.body["deviceId"], req.body["locationId"]).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -550,4 +616,8 @@ process.on('SIGINT', () => {
 process.on('SIGTERM', () => {
     neoObj.free();
     process.exit(0);
+});
+
+process.on('uncaughtException', function (exception) {
+    console.log(exception);
 });
