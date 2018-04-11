@@ -1,4 +1,4 @@
-import json
+import json, pygeoip
 
 from scapy.all import *
 from scapy.layers.dns import DNS
@@ -44,9 +44,7 @@ def getIPHeaders(pkt):
         "dst": pkt['IP'].dst
     }
 
-    json_str = json.dumps(data)
-
-    return json_str
+    return data
 
 
 # Helper function for extracting packets TCP header.
@@ -66,9 +64,7 @@ def getTCPHeaders(pkt):
         "options": pkt['TCP'].options
     }
 
-    json_str = json.dumps(data)
-
-    return json_str
+    return data
 
 
 # Helper function for extracting packets IPv6 header.
@@ -85,9 +81,7 @@ def getIPv6Headers(pkt):
         "dst": pkt['IPv6'].dst
     }
 
-    json_str = json.dumps(data)
-
-    return json_str
+    return data
 
 
 # Helper function for extracting packets DNS header.
@@ -135,9 +129,7 @@ def getDNSHeaders(pkt):
         "ar": ar
    }
 
-    json_str = json.dumps(data)
-
-    return json_str
+    return data
 
 
 def getDNSQR(pkt):
@@ -209,31 +201,23 @@ def getRaw(pkt):
 
     data = str(pkt[Raw])
     data = unicode(data, errors='ignore')
-    json_str = json.dumps(data)
-    return json_str
+    return data
 
 
 def getUDPHeaders(pkt):
-    try:
-        data = {
+    data = {
             "sport": pkt['UDP'].sport,
             "dport": pkt['UDP'].dport,
             "len": pkt['UDP'].len,
             "chksum": pkt['UDP'].chksum
-        }
+    }
 
-    except Exception, e:
-        data = {"error when extracting UDP layer": e}
-
-    json_str = json.dumps(data)
-
-    return json_str
+    return data
 
 
 def getHttpLoad(pkt):
     if TCP in pkt:
-        json_str = getTCPHeaders(pkt)
-        temp = json.loads(json_str)
+        temp = getTCPHeaders(pkt)
         sport = temp["sport"]
         dport = temp["dport"]
 
@@ -242,49 +226,51 @@ def getHttpLoad(pkt):
             headers = HTTPHeaders(http_payload)
 
             if headers is not None:
-                json_str = json.dumps(headers)
-                return json_str
+                return headers
 
         if 80 == dport:
             http_payload = str(pkt[TCP].payload)
             headers = HTTPHeaders(http_payload)
 
             if headers is not None:
-                json_str = json.dumps(headers)
-                return json_str
-
+                return headers
 
 def analyse(pkt):
     data = {}
 
+    hasIP = False
+
+
     if IP in pkt:
-        json_str = getIPHeaders(pkt)
-        data.update({"IP": json.loads(json_str)})
+        data.update({"IP": getIPHeaders(pkt)})
+        hasIP = True
 
     if TCP in pkt:
-        json_str = getTCPHeaders(pkt)
-        data.update({"TCP": json.loads(json_str)})
+        data.update({"TCP": getTCPHeaders(pkt)})
 
     if IPv6 in pkt:
-        json_str = getIPv6Headers(pkt)
-        data.update({"IPv6": json.loads(json_str)})
+        data.update({"IPv6": getIPv6Headers(pkt)})
 
     if UDP in pkt:
-        json_str = getUDPHeaders(pkt)
-        data.update({"UDP": json.loads(json_str)})
+        data.update({"UDP": getUDPHeaders(pkt)})
 
     if Raw in pkt:
-        json_str = getRaw(pkt)
-        data.update({"raw": json.loads(json_str)})
+        data.update({"raw": getRaw(pkt)})
 
     if DNS in pkt:
-        json_str = getDNSHeaders(pkt)
-        data.update({"DNS": json.loads(json_str)})
+        data.update({"DNS": getDNSHeaders(pkt)})
 
     httpLoad = getHttpLoad(pkt)
 
     if httpLoad is not None:
-        data.update({"HTTPLOAD": json.loads(httpLoad)})
+        data.update({"HTTPLOAD": httpLoad})
+
+    if hasIP is True:
+        ip = data.get("IP")
+        src = ip.get("src")
+        dst = ip.get("dst")
+        data.update({"SOURCE": lookUpIP(src)})
+        data.update({"DESTINATION": lookUpIP(dst)})
 
     json_str = json.dumps(data)
 
@@ -300,3 +286,7 @@ def HTTPHeaders(http_payload):
         return headers
     except:
         return None
+
+def lookUpIP(ip):
+    gi = pygeoip.GeoIP('GeoLiteCity.dat')
+    return gi.record_by_addr(ip)

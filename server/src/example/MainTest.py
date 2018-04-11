@@ -1,4 +1,4 @@
-import json, analyser
+import json, analyser, geoLocation
 from scapy.layers.dns import DNS
 
 from scapy.layers.inet import TCP, IP
@@ -12,8 +12,12 @@ counter = 0
 packets = rdpcap('/home/jhohan/CS491/network-edge-packet-inspector/server/src/example/pcap1.pcap')
 
 # create a for loop for all packets
+# for pkt in packets:
+#     counter += 1
+#     data = analyser.analyse(pkt)
+#     json.loads(data)
+#     print data
 for pkt in packets:
-    counter += 1
     data = analyser.analyse(pkt)
-    json.loads(data)
-    print data
+    temp = json.loads(data)
+    print temp
