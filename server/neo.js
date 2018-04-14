@@ -168,7 +168,7 @@ module.exports = class Neo {
                             "count": record.get('c')
                         });
                     });
-                    console.log("body:",body);
+                    console.log("body:", body);
                     session.close();
                     resolve({"success": true, "results": body})
                 })
@@ -615,12 +615,13 @@ module.exports = class Neo {
                     let lastId = parseInt(data["records"][0].get("n.id"));
                     return lastId + 1;
                 }).then((id) => {
-                session.run('CREATE (n:Packet {id: $id, sourceIp: $sourceIp, destinationIp: $destinationIp, port: $port}) RETURN n.id, n.name, n.ip',
+                session.run('CREATE (n:Packet {id: $id, sourceIp: $sourceIp, destinationIp: $destinationIp, sourcePort: $sourcePort, destPort: $destPort}) RETURN n.id, n.name, n.sourceIp, n.destinationIp, n.sourcePort, n.destPort',
                     {
                         "id": id + "",
-                        "sourceIp": body.sourceIp,
-                        "destinationIp": body.destinationIp,
-                        "port": body.port
+                        "sourceIp": body.sourceIp + "",
+                        "destinationIp": body.destinationIp + "",
+                        "sourcePort": body.sPort + "",
+                        "destPort": body.dPort + "",
                     }).then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -628,7 +629,8 @@ module.exports = class Neo {
                             "id": record.get("n.id"),
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
-                            "port": record.get("n.port")
+                            "sourcePort": record.get("n.sourcePort"),
+                            "destinationPort": record.get("n.destPort")
                         });
                     });
                     session.close();
@@ -1232,4 +1234,195 @@ module.exports = class Neo {
         });
     }
 
+    /************************************************************
+     *
+     *          PCAP SAVE
+     *
+     ***********************************************************/
+    savePcapFile(packetData) {
+        console.log(packetData);
+        let packet = {};
+        if (packetData.hasOwnProperty('IP')) {
+            packet["sourceIp"] = packetData["IP"]["src"];
+            packet["destinationIp"] = packetData["IP"]["dst"];
+            let protocol = packetData["IP"]["proto"];
+            if (packetData.hasOwnProperty(protocol)) {
+                if (packetData[protocol].hasOwnProperty("sport")) {
+                    packet["sPort"] = packetData[protocol]["sport"];
+                    packet["dPort"] = packetData[protocol]["dport"];
+                }
+            }
+        }
+        if (packetData.hasOwnProperty("HTTPLOAD")) {
+            packet["typeName"] = packetData["HTTPLOAD"].hasOwnProperty("Content-Type") ? packetData["HTTPLOAD"]["Content-Type"] : "";
+        } else {
+            packet["typeName"] = "Unkown";
+        }
+
+        packet["DESTINATION"] = packetData.hasOwnProperty("DESTINATION") ? this.extractLocation(packetData["DESTINATION"]) : this.setEmptyLocation();
+        packet["SOURCE"] = packetData.hasOwnProperty("SOURCE") ? this.extractLocation(packetData["SOURCE"]) : this.setEmptyLocation();
+        let ids = {};
+
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            console.log("SOURCE: ", packet["SOURCE"]);
+            return session.run(`
+               MERGE (np:Packet {destinationIp:$destinationIp, sport:$sport, dport:$dport, sourceIp:$sourceIp})
+               MERGE (nt:Type {name:$typeName})
+               MERGE (nsl:Location {city:$sCity,regionCode:$sRegionCode,areaCode:$sAreaCode,timeZone:$sTimeZone,dmaCode:$sDmaCode,
+               metroCode:$sMetroCode,countryCode3:$sCountryCodeThree,countryName:$sCountryName,postalCode:$sPostalCode,longitude:$sLong,countryCode:$sCountryCode,
+               latitude:$sLat,continent:$sContinent})
+               MERGE (nsd:Device {ip:$sourceIp})
+               RETURN toFloat(ID(np)) as np, toFloat(ID(nt)) as nt, toFloat(ID(nsl)) as nsl, toFloat(ID(nsd)) as nsd`, {
+                "destinationIp": packet["destinationIp"],
+                "sourceIp": packet["sourceIp"],
+                "sport": packet["sPort"],
+                "dport": packet["dPort"],
+                "typeName": packet["typeName"],
+                "sCity": packet["SOURCE"]["city"],
+                "sRegionCode": packet["SOURCE"]["regionCode"],
+                "sAreaCode": packet["SOURCE"]["areaCode"],
+                "sTimeZone": packet["SOURCE"]["timeZone"],
+                "sDmaCode": packet["SOURCE"]["dmaCode"],
+                "sMetroCode": packet["SOURCE"]["metroCode"],
+                "sCountryCodeThree": packet["SOURCE"]["countryCode3"],
+                "sCountryName": packet["SOURCE"]["countryName"],
+                "sPostalCode": packet["SOURCE"]["postalCode"],
+                "sLong": packet["SOURCE"]["longitude"],
+                "sCountryCode": packet["SOURCE"]["countryCode"],
+                "sLat": packet["SOURCE"]["latitude"],
+                "sContinent": packet["SOURCE"]["continent"]
+            }).then((data) => {
+                if (data["records"].length !== 1) {
+                    console.log("here");
+                    reject({
+                        "success": false,
+                        "msg": "failed to create relationship",
+                        "err": "location doesn't exist"
+                    })
+                } else {
+                    ids["np.id"] = data["records"][0].get("np");
+                    ids["nt.id"] = data["records"][0].get("nt");
+                    ids["nsl.id"] = data["records"][0].get("nsl");
+                    ids["nsd.id"] = data["records"][0].get("nsd");
+                    console.log("Dest: ", packet["DESTINATION"]);
+                    return session.run(`
+                        MERGE (ndl:Location {city:$dCity,regionCode:$dRegionCode,areaCode:$dAreaCode,timeZone:$dTimeZone,dmaCode:$dDmaCode,
+                           metroCode:$dMetroCode,countryCode3:$dCountryCodeThree,countryName:$dCountryName,postalCode:$dPostalCode,longitude:$dLong,countryCode:$dCountryCode,
+                           latitude:$dLat,continent:$dContinent})
+                        MERGE (ndd:Device {ip:$destinationIp})
+                        RETURN toFloat(ID(ndd)) as ndd, toFloat(ID(ndl)) as ndl`, {
+                        "destinationIp": packet["destinationIp"],
+                        "dCity": packet["DESTINATION"]["city"],
+                        "dRegionCode": packet["DESTINATION"]["regionCode"],
+                        "dAreaCode": packet["DESTINATION"]["areaCode"],
+                        "dTimeZone": packet["DESTINATION"]["timeZone"],
+                        "dDmaCode": packet["DESTINATION"]["dmaCode"],
+                        "dMetroCode": packet["DESTINATION"]["metroCode"],
+                        "dCountryCodeThree": packet["DESTINATION"]["countryCode3"],
+                        "dCountryName": packet["DESTINATION"]["countryName"],
+                        "dPostalCode": packet["DESTINATION"]["postalCode"],
+                        "dLong": packet["DESTINATION"]["longitude"],
+                        "dCountryCode": packet["DESTINATION"]["countryCode"],
+                        "dLat": packet["DESTINATION"]["latitude"],
+                        "dContinent": packet["DESTINATION"]["continent"]
+                    }).then((data) => {
+                        if (data["records"].length !== 1) {
+                            console.log("here2");
+                            reject({
+                                "success": false,
+                                "msg": "failed to create relationship",
+                                "err": "location doesn't exist"
+                            })
+                        } else {
+                            ids["ndd.id"] = data["records"][0].get("ndd");
+                            ids["ndl.id"] = data["records"][0].get("ndl");
+
+                            console.log("IDS: ", ids);
+
+                            return session.run(`MATCH (p:Packet) WHERE ID(p)=$np WITH p
+                                MATCH (t:Type) WHERE ID(t)=$nt WITH p,t  
+                                MATCH (sl:Location) WHERE ID(sl)=$nsl WITH p,t,sl
+                                MATCH (dl:Location) WHERE ID(dl)=$ndl WITH p,t,sl,dl
+                                MATCH (sd:Device) WHERE ID(sd)=$nsd WITH p,t,sl,dl,sd
+                                MATCH (dd:Device) WHERE ID(dd)=$ndd WITH p,t,sl,dl,sd,dd
+                                
+                                CREATE (p)-[:goingTo]->(dd)
+                                CREATE (p)<-[:comingFrom]-(sd)
+                                CREATE (p)-[:typeOf]->(t)
+                                CREATE (sd)-[:locatedIn]->(sl)
+                                CREATE (dd)-[:locatedIn]->(dl)`, {
+                                "np": ids["np.id"],
+                                "nt": ids["nt.id"],
+                                "nsl": ids["nsl.id"],
+                                "ndl": ids["ndl.id"],
+                                "nsd": ids["nsd.id"],
+                                "ndd": ids["ndd.id"]
+                            }).then(() => {
+                                console.log("Finished");
+                                session.close();
+                                resolve({"success": true})
+                            }).catch((err) => {
+                                session.close();
+                                console.log("Error: ", err);
+                                reject({"success": false, "msg": "failed to save packet file", "err": err})
+                            })
+                        }
+                    }).catch((err) => {
+                        session.close();
+                        console.log("Error: ", err);
+                        reject({"success": false, "msg": "failed to save packet file", "err": err})
+                    });
+                }
+            }).catch((err) => {
+                session.close();
+                console.log("Error: ", err);
+                reject({"success": false, "msg": "failed to save packet file", "err": err})
+            })
+        }).catch((err) => {
+            session.close();
+            console.log("Error: ", err);
+            return ({"success": false, "msg": "failed to save packet file", "err": err})
+        })
+    }
+
+    extractLocation(data) {
+        if (!data) {
+            return this.setEmptyLocation();
+        }
+        let res = {};
+        res["city"] = data.hasOwnProperty("city") && data["city"] ? data["city"] : "";
+        res["regionCode"] = data.hasOwnProperty("region_code") && data["region_code"] ? data["region_code"] : "";
+        res["areaCode"] = data.hasOwnProperty("area_code") && data["area_code"] ? data["area_code"] : "";
+        res["timeZone"] = data.hasOwnProperty("time_zone") && data["time_zone"] ? data["time_zone"] : "";
+        res["dmaCode"] = data.hasOwnProperty("dma_code") && data["dma_code"] ? data["dma_code"] : "";
+        res["metroCode"] = data.hasOwnProperty("metro_code") && data["metro_code"] ? data["metro_code"] : "";
+        res["countryCode3"] = data.hasOwnProperty("country_code3") && data["country_code3"] ? data["country_code3"] : "";
+        res["countryName"] = data.hasOwnProperty("country_name") && data["country_name"] ? data["country_name"] : "";
+        res["postalCode"] = data.hasOwnProperty("postal_code") && data["postal_code"] ? data["postal_code"] : "";
+        res["longitude"] = data.hasOwnProperty("longitude") && data["longitude"] ? data["longitude"] : "";
+        res["countryCode"] = data.hasOwnProperty("country_code") && data["country_code"] ? data["country_code"] : "";
+        res["latitude"] = data.hasOwnProperty("latitude") && data["latitude"] ? data["latitude"] : "";
+        res["continent"] = data.hasOwnProperty("continent") && data["continent"] ? data["continent"] : "";
+        return res;
+    }
+
+    setEmptyLocation() {
+        let res = {};
+        res["city"] = "";
+        res["regionCode"] = "";
+        res["areaCode"] = "";
+        res["timeZone"] = "";
+        res["dmaCode"] = "";
+        res["metroCode"] = "";
+        res["countryCode3"] = "";
+        res["countryName"] = "";
+        res["postalCode"] = "";
+        res["longitude"] = "";
+        res["countryCode"] = "";
+        res["latitude"] = "";
+        res["continent"] = "";
+        return res;
+    }
 };
+

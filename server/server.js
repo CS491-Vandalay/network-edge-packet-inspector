@@ -600,6 +600,18 @@ app.post('/api/pcap/createLocatedIn', (req, res) => {
 });
 
 /***************************************************
+ *              PCAP SAVE
+ **************************************************/
+app.post('/api/pcap/save',(req,res)=>{
+   neoObj.savePcapFile(req.body).then((data)=>{
+       res.jsonp(data);
+   }).catch((err)=>{
+       console.log(err);
+       res.jsonp(err);
+   })
+});
+
+/***************************************************
  *              EXIT HANDLERS
  **************************************************/
 
