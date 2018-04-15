@@ -44,9 +44,13 @@ export class DeviceGridDialogComponent implements OnInit {
       {label: "Name", data: this.device["name"]},
       {label: "IP", data: this.device["ip"]});
 
-    this.gridOptions = <GridOptions>{};
+    this.gridOptions = <GridOptions>{
+      enableColResize: true
+    };
     this.gridData = [];
-    this.gridTwoOptions = <GridOptions>{};
+    this.gridTwoOptions = <GridOptions>{
+      enableColResize: true
+    };
     this.gridTwoData = [];
 
   }
@@ -57,15 +61,22 @@ export class DeviceGridDialogComponent implements OnInit {
       this.gridColumns = [{headerName: "Id", field: "id"},
         {headerName: "Source IP", field: "sourceIp"},
         {headerName: "Destination IP", field: "destinationIp"},
-        {headerName: "Port", field: "port"},
+        {headerName: "Source Port", field: "sport"},
+        {headerName: "Destination Port", field: "dport"},
         {headerName: "Direction", field: "direction"}];
-
+      this.gridData = [];
       forkJoin(
         this.dataService.getPacketsFromDevice(this.device["id"]),
         this.dataService.getPacketsToDevice(this.device["id"]))
         .subscribe((res: any[]) => {
-          let fromPackets = res[0]["results"];
-          let toPackets = res[1]["results"];
+          let fromPackets = [];
+          if (res[0]["results"]) {
+            fromPackets = res[0]["results"];
+          }
+          let toPackets = [];
+          if (res[1]["results"]) {
+            toPackets = res[1]["results"];
+          }
 
           for (let p of fromPackets) {
             this.gridData.push(p);
@@ -73,19 +84,34 @@ export class DeviceGridDialogComponent implements OnInit {
           for (let p of toPackets) {
             this.gridData.push(p);
           }
-          console.log("set row data");
           this.gridOptions.api.setRowData(this.gridData);
-          console.log("Finished loading");
           this.loaded = true;
         });
     }
     else if (this.deviceFlag) {
       this.gridColumns = [{headerName: "Id", field: "id"},
-        {headerName: "Country", field: "country"}];
+        {headerName: "City", field: "city"},
+        {headerName: "Region Code", field: "regionCode"},
+        {headerName: "Area Code", field: "areaCode"},
+        {headerName: "Postal Code", field: "postalCode"},
+        {headerName: "Country Name", field: "countryName"},
+        {headerName: "Country", field: "country"},
+        {headerName: "Country Code 3", field: "countryCode3"},
+        {headerName: "Country Code", field: "countryCode"},
+        {headerName: "Continent", field: "continent"},
+        {headerName: "Latitude", field: "latitude"},
+        {headerName: "Longitude", field: "longitude"},
+        {headerName: "DMA Code", field: "dmaCode"},
+        {headerName: "Time Zone", field: "Europe/timeZone"},
+        {headerName: "Metro Code", field: "metroCode"}];
       this.dataService.getLocationByDeviceId(this.device["id"]).subscribe((data) => {
         // Push the packet results into data
-        for (let v of data["results"]) {
-          this.gridData.push(v);
+        this.gridData = [];
+        console.log("results:",data["results"]);
+        if (data["results"]) {
+          for (let v of data["results"]) {
+            this.gridData.push(v);
+          }
         }
 
         // Update the ag-grid
@@ -95,19 +121,28 @@ export class DeviceGridDialogComponent implements OnInit {
         this.loaded = true;
       });
     }
-    params.api.sizeColumnsToFit();
+    // params.api.sizeColumnsToFit();
+
+    let allColumnIds = [];
+    this.gridOptions.columnApi.getAllColumns().forEach(function(column) {
+      allColumnIds.push(column.getColId());
+    });
+    this.gridOptions.columnApi.autoSizeColumns(allColumnIds,null);
   }
 
 
   onGridTwoReady(params) {
     console.log("grid ready");
     if (this.deviceFlag) {
-      this.gridTwoColumns = [{headerName: "Type", field: "name"},
+      this.gridTwoColumns = [{headerName: "Type", field: "type"},
         {headerName: "Count", field: "count"}];
       this.dataService.getTypesForDevice(this.device["id"]).subscribe((data) => {
         // Push the packet results into data
-        for (let v of data["results"]) {
-          this.gridTwoData.push(v);
+        this.gridTwoData = [];
+        if (data["results"]) {
+          for (let v of data["results"]) {
+            this.gridTwoData.push(v);
+          }
         }
 
         // Update the ag-grid

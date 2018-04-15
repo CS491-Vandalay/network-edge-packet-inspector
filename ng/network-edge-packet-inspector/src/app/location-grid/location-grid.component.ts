@@ -24,13 +24,27 @@ export class LocationGridComponent implements OnInit {
 
   ngOnInit() {
     this.gridOptions = <GridOptions>{
-      rowSelection: 'single'
+      rowSelection: 'single',
+      enableColResize: true
     };
     this.locationData = [];
 
     // Columns for the ag grid
     this.locationColumns = [{headerName: "Id", field: "id"},
-      {headerName: "Country", field: "country"}];
+      {headerName: "City", field: "city"},
+      {headerName: "Region Code", field: "regionCode"},
+      {headerName: "Area Code", field: "areaCode"},
+      {headerName: "Postal Code", field: "postalCode"},
+      {headerName: "Country Name", field: "countryName"},
+      {headerName: "Country", field: "country"},
+      {headerName: "Country Code 3", field: "countryCode3"},
+      {headerName: "Country Code", field: "countryCode"},
+      {headerName: "Continent", field:"continent"},
+      {headerName: "Latitude", field: "latitude"},
+      {headerName: "Longitude", field: "longitude"},
+      {headerName: "DMA Code", field: "dmaCode"},
+      {headerName: "Time Zone", field: "Europe/timeZone"},
+      {headerName: "Metro Code", field: "metroCode"}];
 
 
     this.dataService.getLocations().subscribe((data) => {
@@ -63,6 +77,12 @@ export class LocationGridComponent implements OnInit {
 
   onGridReady(params) {
     params.api.sizeColumnsToFit();
+
+    let allColumnIds = [];
+    this.gridOptions.columnApi.getAllColumns().forEach(function(column) {
+      allColumnIds.push(column.getColId());
+    });
+    this.gridOptions.columnApi.autoSizeColumns(allColumnIds,null);
   }
 
 }

@@ -30,7 +30,8 @@ export class PacketGridComponent implements OnInit {
     this.packetColumns = [{headerName: "Id", field: "id"},
       {headerName: "Source IP", field: "sourceIp"},
       {headerName: "Destination IP", field: "destinationIp"},
-      {headerName: "Port", field: "port"}];
+      {headerName: "Source Port", field: "sport"},
+      {headerName: "Destination Port", field: "dport"}];
 
 
     this.dataService.getPackets().subscribe((data)=>{

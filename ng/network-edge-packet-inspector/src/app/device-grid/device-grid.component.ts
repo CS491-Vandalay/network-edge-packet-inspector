@@ -29,19 +29,20 @@ export class DeviceGridComponent implements OnInit {
 
     // Columns for the ag grid
     this.deviceColumns = [{headerName: "Id", field: "id"},
-      {headerName: "IP", field: "ip"},
-      {headerName: "Name", field: "name"}];
+      {headerName: "IP", field: "ip"}];
 
 
     this.dataService.getDevices().subscribe((data) => {
       // Push the packet results into data
-      for (let v of data["results"]) {
-        this.deviceData.push(v);
+      if(data["results"]) {
+        for (let v of data["results"]) {
+          this.deviceData.push(v);
+        }
       }
-
 
       // Update the ag-grid
       this.gridOptions.api.setRowData(this.deviceData);
+
 
       // Done loading
       this.loaded = true;

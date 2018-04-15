@@ -1,8 +1,9 @@
 <div [hidden]="loaded">LOADING...</div>
 <div [hidden]="!loaded">
   <h1>Type</h1>
-  <button mat-button [disabled]="!rowSelected" (click)="openDialog()">View Type</button>
-  <button mat-button [disabled]="!rowSelected">View Relationships</button>
+  <button mat-button [disabled]="!rowSelected" (click)="openDialog('type')">View Device</button>
+  <button mat-button [disabled]="!rowSelected" (click)="openDialog('packets')">View Packets</button>
+  <button mat-button [disabled]="!rowSelected" (click)="openDialog('device')">View Device</button>
   <ag-grid-angular
     style="width: 1000px; height: 400px;"
     class="ag-theme-blue"

@@ -13,12 +13,12 @@ export class DataServiceService {
     return this.http.get("http://localhost:8090/api/pcap/getPackets")
   }
 
-  getPacketsFromDevice(id: string): Observable<any>{
+  getPacketsFromDevice(id: number): Observable<any>{
     console.log("Getting packets for device id: ", id);
     return this.http.get("http://localhost:8090/api/pcap/getPacketsFromDevice/"+id)
   }
 
-  getPacketsToDevice(id: string): Observable<any>{
+  getPacketsToDevice(id: number): Observable<any>{
     console.log("Getting packets for device id: ", id);
     return this.http.get("http://localhost:8090/api/pcap/getPacketsToDevice/"+id)
   }
@@ -33,9 +33,9 @@ export class DataServiceService {
     return this.http.get("http://localhost:8090/api/pcap/getLocations")
   }
 
-  getLocationByDeviceId(id: string){
+  getLocationByDeviceId(id: number){
     console.log("Getting location of device: ", id);
-    return this.http.get("http://localhost:8090/api/pcap/getDeviceLocation/"+encodeURIComponent(id))
+    return this.http.get("http://localhost:8090/api/pcap/getDeviceLocation/"+id)
   }
 
   getTypes(): Observable<any> {
@@ -43,8 +43,8 @@ export class DataServiceService {
     return this.http.get("http://localhost:8090/api/pcap/getTypes")
   }
 
-  getTypesForDevice(id: string){
+  getTypesForDevice(id: number){
     console.log("Getting types for device: ", id);
-    return this.http.get("http://localhost:8090/api/pcap/getTypeCountForDevice/"+encodeURIComponent(id));
+    return this.http.get("http://localhost:8090/api/pcap/getTypeCountForDevice/"+id);
   }
 }

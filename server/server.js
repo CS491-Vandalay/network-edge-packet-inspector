@@ -193,7 +193,7 @@ app.get('/api/pcap/getTypeByName/:name', (req, res) => {
 });
 
 app.get('/api/pcap/getTypeById/:id', (req, res) => {
-    neoObj.getTypeById(decodeURIComponent(req.params.id)).then((data) => {
+    neoObj.getTypeById(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err)
@@ -216,7 +216,7 @@ app.get('/api/pcap/getDeviceCount', (req, res) => {
 });
 
 app.get('/api/pcap/getTypeCountForDevice/:id',(req,res)=>{
-    neoObj.getNumTypesPerDevice(decodeURIComponent(req.params.id)).then((data)=>{
+    neoObj.getNumTypesPerDevice(parseInt(req.params.id)).then((data)=>{
         res.jsonp(data);
     }).catch((err)=>{
         console.log(err);
@@ -260,7 +260,7 @@ app.get('/api/pcap/getDeviceByIp/:ip', (req, res) => {
 });
 
 app.get('/api/pcap/getDeviceById/:id', (req, res) => {
-    neoObj.getDeviceById(decodeURIComponent(req.params.id)).then((data) => {
+    neoObj.getDeviceById(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -268,7 +268,7 @@ app.get('/api/pcap/getDeviceById/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getDeviceLocation/:id', (req, res) => {
-    neoObj.getDeviceLocation(decodeURIComponent(req.params.id)).then((data) => {
+    neoObj.getDeviceLocation(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -314,7 +314,7 @@ app.get('/api/pcap/getDeviceCount', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketsFromDevice/:id', (req, res) => {
-    neoObj.getPacketsFromDevice(req.params.id).then((data) => {
+    neoObj.getPacketsFromDevice(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -322,7 +322,7 @@ app.get('/api/pcap/getPacketsFromDevice/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketsToDevice/:id', (req, res) => {
-    neoObj.getPacketsToDevice(req.params.id).then((data) => {
+    neoObj.getPacketsToDevice(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -330,7 +330,7 @@ app.get('/api/pcap/getPacketsToDevice/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getDeviceByPacket/:id', (req, res) => {
-    neoObj.getDevicesForPacketId(req.params.id).then((data) => {
+    neoObj.getDevicesForPacketId(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -338,7 +338,7 @@ app.get('/api/pcap/getDeviceByPacket/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getDestinationDeviceForPacket/:id', (req, res) => {
-    neoObj.getDestinationDeviceForPacket(req.params.id).then((data) => {
+    neoObj.getDestinationDeviceForPacket(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -366,7 +366,7 @@ app.get('/api/pcap/getLocationByCountry/:country', (req, res) => {
 });
 
 app.get('/api/pcap/getLocationById/:id', (req, res) => {
-    neoObj.getLocationById(req.params.id).then((data) => {
+    neoObj.getLocationById(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -374,7 +374,7 @@ app.get('/api/pcap/getLocationById/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getDeviceCount/locationId/:id', (req, res) => {
-    neoObj.getNumDeviceFromLocationId(req.params.id).then((data) => {
+    neoObj.getNumDeviceFromLocationId(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -398,7 +398,7 @@ app.get('/api/pcap/getLocationCount', (req, res) => {
 });
 
 app.get('/api/pcap/getDestinationOfPacket/:id', (req, res) => {
-    neoObj.getDestinationLocationOfPacket(req.params.id).then((data) => {
+    neoObj.getDestinationLocationOfPacket(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -406,7 +406,7 @@ app.get('/api/pcap/getDestinationOfPacket/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getSourceOfPacket/:id', (req, res) => {
-    neoObj.getSourceLocationOfPacket(req.params.id).then((data) => {
+    neoObj.getSourceLocationOfPacket(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -450,7 +450,7 @@ app.get('/api/pcap/getPacketByPort/:port', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketType/:id', (req, res) => {
-    neoObj.getPacketType(decodeURIComponent(req.params.id)).then((data) => {
+    neoObj.getPacketType(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -522,7 +522,7 @@ app.get('/api/pcap/getNumPacketsTypeToLocation/:tid/:lid', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketsFromLocation/:id', (req, res) => {
-    neoObj.getPacketsFromLocation(req.params.id, req.params.lid).then((data) => {
+    neoObj.getPacketsFromLocation(parseInt(req.params.id), req.params.lid).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -530,7 +530,7 @@ app.get('/api/pcap/getPacketsFromLocation/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketsToLocation/:id', (req, res) => {
-    neoObj.getPacketsToLocation(req.params.id, req.params.lid).then((data) => {
+    neoObj.getPacketsToLocation(parseInt(req.params.id), req.params.lid).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -538,7 +538,7 @@ app.get('/api/pcap/getPacketsToLocation/:id', (req, res) => {
 });
 
 app.get('/api/pcap/getPacketSourceLocation/:id', (req, res) => {
-    neoObj.getSourceLocationOfPacket(req.params.id).then((data) => {
+    neoObj.getSourceLocationOfPacket(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -632,4 +632,5 @@ process.on('SIGTERM', () => {
 
 process.on('uncaughtException', function (exception) {
     console.log(exception);
+    process.exit(0);
 });

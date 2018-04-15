@@ -19,20 +19,21 @@ export class TypeGridComponent implements OnInit {
   private gridOptions: GridOptions;
   private dialogRef: any;
 
-  constructor(private dataService: DataServiceService, private dialog: MatDialog) { }
+  constructor(private dataService: DataServiceService, private dialog: MatDialog) {
+  }
 
   ngOnInit() {
-    this.gridOptions= <GridOptions>{
+    this.gridOptions = <GridOptions>{
       rowSelection: 'single'
     };
     this.typeData = [];
 
     // Columns for the ag grid
     this.typeColumns = [{headerName: "Id", field: "id"},
-      {headerName: "Type", field: "name"}];
+      {headerName: "Type", field: "type"}];
 
 
-    this.dataService.getTypes().subscribe((data)=>{
+    this.dataService.getTypes().subscribe((data) => {
       // Push the packet results into data
       for (let v of data["results"]) {
         this.typeData.push(v);
@@ -46,12 +47,12 @@ export class TypeGridComponent implements OnInit {
     });
   }
 
-  openDialog() {
+  openDialog(option: string) {
     let selected = this.gridOptions.api.getSelectedNodes();
     this.dialogRef = this.dialog.open(TypeGridDialogComponent, {
       width: "90%",
       height: "80%",
-      data: {data: selected}
+      data: {data: selected, mode: option}
     });
     console.log(selected);
   }

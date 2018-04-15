@@ -18,14 +18,6 @@ module.exports = class Neo {
         this.driver.close();
     }
 
-    readTest(sCallback, fCallback) {
-        let session = this.driver.session();
-        session
-            .run('MATCH (n:Person) RETURN n.name')
-            .then(sCallback, fCallback)
-    }
-
-
     /************************************************************
      *
      *          PCAP TYPES
@@ -35,11 +27,11 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Type) RETURN n.id, n.name')
+                .run('MATCH (n:Type) RETURN toFloat(ID(n)) as id, n.type')
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "name": record.get("n.name")});
+                        body.push({"id": record.get("id"), "type": record.get("n.type")});
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -51,15 +43,15 @@ module.exports = class Neo {
         })
     }
 
-    getTypeByName(name) {
+    getTypeByName(type) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Type) WHERE n.name=$name RETURN n.id, n.name', {"name": name})
+                .run('MATCH (n:Type) WHERE n.type=type RETURN toFloat(ID(n)) as id, n.type', {"type": type})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "name": record.get("n.name")});
+                        body.push({"id": record.get("id"), "type": record.get("n.type")});
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -75,11 +67,11 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Type) WHERE n.id=$id RETURN n.id, n.name', {"id": "" + id})
+                .run('MATCH (n:Type) WHERE ID(n)=$id RETURN toFloat(ID(n)) as id, n.type', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "name": record.get("n.name")});
+                        body.push({"id": record.get("id"), "type": record.get("n.type")});
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -94,22 +86,14 @@ module.exports = class Neo {
     addType(body) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
-            session
-            // Get the next id
-                .run('MATCH (n:Type) RETURN n.id ORDER BY n.id DESC LIMIT 1')
-                .then((data) => {
-                    let lastId = parseInt(data["records"][0].get("n.id"));
-                    return lastId + 1;
-                }).then((id) => {
-                session.run('CREATE (n:Type {id: $id, name: $name}) RETURN n.id, n.name',
-                    {"id": id + "", "name": body.name}).then((data) => {
-                    let body = [];
-                    data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "type": record.get("n.name"),});
-                    });
-                    session.close();
-                    resolve({"success": true, "results": body})
-                })
+            session.run('CREATE (n:Type {type: type}) RETURN toFloat(ID(n)) as id, n.type',
+                {"type": body.type}).then((data) => {
+                let body = [];
+                data["records"].forEach((record) => {
+                    body.push({"id": record.get("id"), "type": record.get("n.type"),});
+                });
+                session.close();
+                resolve({"success": true, "results": body})
             }).catch((err) => {
                 session.close();
                 reject({"success": false, "msg": "failed to save type", "err": err})
@@ -121,7 +105,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Type) WHERE n.id=$id DETACH DELETE n', {"id": id})
+                .run('MATCH (n:Type) WHERE ID(n)=$id DETACH DELETE n', {"id": id})
                 .then(() => {
                     session.close();
                     resolve({"success": true, "results": {}})
@@ -159,12 +143,12 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('Match (d:Device)-[]-(p:Packet)-[:typeOf]-(t:Type) where d.id=$id return t.name, toFloat(count(t)) as c', {'id': "" + id})
+                .run('Match (d:Device)-[]-(p:Packet)-[:typeOf]-(t:Type) where ID(d)=$id return t.type, toFloat(count(t)) as c', {'id': id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "name": record.get("t.name"),
+                            "type": record.get("t.type"),
                             "count": record.get('c')
                         });
                     });
@@ -179,19 +163,20 @@ module.exports = class Neo {
         })
     }
 
-    getPacketsByType() {
+    getPacketsByType(type) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE t.name="text" return p.id, p.sourceIp, p.destinationIp, p.port')
+                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE t.type=$type return toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"$type": type})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("p.id"),
+                            "id": record.get("id"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port")
+                            "sport": record.get("p.sport"),
+                            "dport": record.get("p.dport"),
                         });
                     });
                     session.close();
@@ -213,11 +198,11 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device) RETURN n.id, n.name, n.ip')
+                .run('MATCH (n:Device) RETURN toFloat(ID(n)) as id, n.ip')
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "name": record.get("n.name"), "ip": record.get("n.ip")});
+                        body.push({"id": record.get("id"), "ip": record.get("n.ip")});
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -233,11 +218,11 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device) WHERE n.ip=$ip RETURN n.id, n.name, n.ip', {"ip": ip})
+                .run('MATCH (n:Device) WHERE n.ip=$ip RETURN toFloat(ID(n)) as id, n.ip', {"ip": ip})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
+                        body.push({"id": record.get("id"), "ip": record.get("n.ip")});
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -249,35 +234,36 @@ module.exports = class Neo {
         })
     }
 
-    getDeviceByName(name) {
-        let session = this.driver.session();
-        return new Promise((resolve, reject) => {
-            session
-                .run('MATCH (n:Device) WHERE n.name=$name RETURN n.id, n.name, n.ip', {"name": name})
-                .then((data) => {
-                    let body = [];
-                    data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
-                    });
-                    session.close();
-                    resolve({"success": true, "results": body})
-                })
-                .catch((err) => {
-                    session.close();
-                    reject({"success": false, "msg": "failed to get types", "err": err})
-                });
-        })
-    }
+    // DEPRECATED: DEVICES DON'T USE NAME
+    // getDeviceByName(name) {
+    //     let session = this.driver.session();
+    //     return new Promise((resolve, reject) => {
+    //         session
+    //             .run('MATCH (n:Device) WHERE n.name=$name RETURN toFloat(ID(n)) as id, n.ip', {"name": name})
+    //             .then((data) => {
+    //                 let body = [];
+    //                 data["records"].forEach((record) => {
+    //                     body.push({"id": record.get("id"), "ip": record.get("n.ip")});
+    //                 });
+    //                 session.close();
+    //                 resolve({"success": true, "results": body})
+    //             })
+    //             .catch((err) => {
+    //                 session.close();
+    //                 reject({"success": false, "msg": "failed to get types", "err": err})
+    //             });
+    //     })
+    // }
 
     getDeviceById(id) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device) WHERE n.id=$id RETURN n.id, n.name, n.ip', {"id": "" + id})
+                .run('MATCH (n:Device) WHERE ID(n)=$id RETURN toFloat(ID(n)) as id, n.ip', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
+                        body.push({"id": record.get("id"), "ip": record.get("n.ip")});
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -293,13 +279,26 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device)-[]-(l:Location) WHERE n.id=$id RETURN l.id, l.country', {"id": "" + deviceId})
+                .run(`MATCH (n:Device)-[]-(l:Location) WHERE ID(n)=$id RETURN DISTINCT toFloat(ID(l)) as id, l.city, l.regionCode, l.areaCode, l.timeZone, l.dmaCode,
+                    l.metroCode, l.countryCode3, l.countryName, l.postalCode, l.longitude, l.countryCode, l.latitude, l.continent`, {"id": deviceId})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("l.id"),
-                            "country": record.get("l.country")
+                            "id": record.get("id"),
+                            "city": record.get("l.city"),
+                            "regionCode": record.get("l.regionCode"),
+                            "areaCode": record.get("l.areaCode"),
+                            "timeZone": record.get("l.timeZone"),
+                            "dmaCode": record.get("l.dmaCode"),
+                            "metroCode": record.get("l.metroCode"),
+                            "countryCode3": record.get("l.countryCode3"),
+                            "countryName": record.get("l.countryName"),
+                            "postalCode": record.get("l.postalCode"),
+                            "longitude": record.get("l.longitude"),
+                            "countryCode": record.get("l.countryCode"),
+                            "latitude": record.get("l.latitude"),
+                            "continent": record.get("l.continent")
                         });
                     });
                     session.close();
@@ -315,22 +314,14 @@ module.exports = class Neo {
     saveDevice(body) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
-            session
-            // Get the next id
-                .run('MATCH (n:Device) RETURN n.id ORDER BY n.id DESC LIMIT 1')
-                .then((data) => {
-                    let lastId = parseInt(data["records"][0].get("n.id"));
-                    return lastId + 1;
-                }).then((id) => {
-                session.run('CREATE (n:Device {id: $id, name: $name, ip: $ip}) RETURN n.id, n.name, n.ip',
-                    {"id": id + "", "name": body.name, "ip": body.ip}).then((data) => {
-                    let body = [];
-                    data["records"].forEach((record) => {
-                        body.push({"id": record.get("n.id"), "type": record.get("n.name"), "ip": record.get("n.ip")});
-                    });
-                    session.close();
-                    resolve({"success": true, "results": body})
-                })
+            session.run('CREATE (n:Device {ip: $ip}) RETURN toFloat(ID(n)) as id, n.ip',
+                {"ip": body.ip}).then((data) => {
+                let body = [];
+                data["records"].forEach((record) => {
+                    body.push({"id": record.get("id"), "ip": record.get("n.ip")});
+                });
+                session.close();
+                resolve({"success": true, "results": body})
             }).catch((err) => {
                 session.close();
                 reject({"success": false, "msg": "failed to save device", "err": err})
@@ -342,7 +333,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device) WHERE n.id=$id DETACH DELETE n', {"id": id})
+                .run('MATCH (n:Device) WHERE ID(n)=$id DETACH DELETE n', {"id": id})
                 .then(() => {
                     session.close();
                     resolve({"success": true, "results": {}})
@@ -380,15 +371,16 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device)-[:comingFrom]->(p) WHERE n.id=$id RETURN p.id, p.sourceIp, p.destinationIp, p.port', {"id": id + ""})
+                .run('MATCH (n:Device)-[:comingFrom]->(p) WHERE ID(n)=$id RETURN DISTINCT toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("p.id"),
+                            "id": record.get("id"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port"),
+                            "sport": record.get("p.sport"),
+                            "dport": record.get("p.dport"),
                             "direction": "From"
                         });
                     });
@@ -404,17 +396,19 @@ module.exports = class Neo {
 
     getPacketsToDevice(id) {
         let session = this.driver.session();
+        console.log("ID:", typeof(id))
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p)-[:goingTo]->(d:Device) WHERE d.id=$id RETURN p.id, p.sourceIp, p.destinationIp, p.port', {"id": id + ""})
+                .run('MATCH (p)-[:goingTo]->(d:Device) WHERE ID(d)=$id RETURN DISTINCT toFloat(ID(p)) as pid, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("p.id"),
+                            "id": record.get("pid"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port"),
+                            "sport": record.get("p.sport"),
+                            "dport": record.get("p.dport"),
                             "direction": "To"
                         });
                     });
@@ -423,7 +417,7 @@ module.exports = class Neo {
                 })
                 .catch((err) => {
                     session.close();
-                    reject({"success": false, "msg": "failed to get types", "err": err})
+                    reject({"success": false, "msg": "failed to get packets for device: " + id, "err": err})
                 });
         })
     }
@@ -432,14 +426,13 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p:Packet)-[:goingTo]->(d:Device) WHERE p.id=$id return d.id, d.ip, d.name', {"id": id + ""})
+                .run('MATCH (p:Packet)-[:goingTo]->(d:Device) WHERE ID(p)=$id return toFloat(ID(d)) as id, d.ip', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("d.id"),
-                            "ip": record.get("d.ip"),
-                            "name": record.get("d.name")
+                            "id": record.get("id"),
+                            "ip": record.get("d.ip")
                         });
                     });
                     session.close();
@@ -456,14 +449,13 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p:Packet)<-[:comingFrom]-(d:Device) WHERE p.id=$id return d.id, d.ip, d.name', {"id": id + ""})
+                .run('MATCH (p:Packet)<-[:comingFrom]-(d:Device) WHERE ID(p)=$id return toFloat(ID(d)) as id, d.ip', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("d.id"),
-                            "ip": record.get("d.ip"),
-                            "name": record.get("d.name")
+                            "id": record.get("id"),
+                            "ip": record.get("d.ip")
                         });
                     });
                     session.close();
@@ -486,15 +478,16 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) RETURN n.id, n.sourceIp, n.destinationIp, n.port')
+                .run('MATCH (n:Packet) RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport,n.dport')
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("n.id"),
+                            "id": record.get("id"),
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
-                            "port": record.get("n.port")
+                            "sport": record.get("n.sport"),
+                            "dport": record.get("n.dport")
                         });
                     });
                     session.close();
@@ -511,15 +504,16 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.sourceIp=$ip RETURN n.id, n.sourceIp, n.destinationIp, n.port', {"ip": ip})
+                .run('MATCH (n:Packet) WHERE n.sourceIp=$ip RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport', {"ip": ip})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("n.id"),
+                            "id": record.get("id"),
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
-                            "port": record.get("n.port")
+                            "sport": record.get("n.sport"),
+                            "dport": record.get("n.dport")
                         });
                     });
                     session.close();
@@ -536,15 +530,16 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.destinationIp=$ip RETURN n.id, n.sourceIp, n.destinationIp, n.port', {"ip": ip})
+                .run('MATCH (n:Packet) WHERE n.destinationIp=$ip RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport', {"ip": ip})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("n.id"),
+                            "id": record.get("id"),
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
-                            "port": record.get("n.port")
+                            "sport": record.get("n.sport"),
+                            "dport": record.get("n.dport")
                         });
                     });
                     session.close();
@@ -557,19 +552,46 @@ module.exports = class Neo {
         })
     }
 
-    getPacketsByPort(port) {
+    getPacketsBySourcePort(port) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.port=$port RETURN n.id, n.sourceIp, n.destinationIp, n.port', {"port": prt})
+                .run('MATCH (n:Packet) WHERE n.sport=$port RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport', {"port": prt})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("n.id"),
+                            "id": record.get("id"),
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
-                            "port": record.get("n.port")
+                            "sport": record.get("n.sport"),
+                            "dport": record.get("n.dport")
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getPacketsByDestPort(port) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Packet) WHERE n.dport=$port RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport', {"port": prt})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("id"),
+                            "sourceIp": record.get("n.sourceIp"),
+                            "destinationIp": record.get("n.destinationIp"),
+                            "sport": record.get("n.sport"),
+                            "dport": record.get("n.dport")
                         });
                     });
                     session.close();
@@ -586,13 +608,13 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p:Packet)-[:typeOf]->(t:Type) WHERE p.id=$id RETURN t.id, t.name', {"id": id})
+                .run('MATCH (p:Packet)-[:typeOf]->(t:Type) WHERE ID(p)=$id RETURN toFloat(ID(t)) as id, t.type', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("t.id"),
-                            "name": record.get("t.name")
+                            "id": record.get("id"),
+                            "name": record.get("t.type")
                         });
                     });
                     session.close();
@@ -605,6 +627,7 @@ module.exports = class Neo {
         })
     }
 
+    // TODO: CHECK TO BE SURE WE DON'T NEED THIS?
     savePacket(body) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
@@ -615,7 +638,7 @@ module.exports = class Neo {
                     let lastId = parseInt(data["records"][0].get("n.id"));
                     return lastId + 1;
                 }).then((id) => {
-                session.run('CREATE (n:Packet {id: $id, sourceIp: $sourceIp, destinationIp: $destinationIp, sourcePort: $sourcePort, destPort: $destPort}) RETURN n.id, n.name, n.sourceIp, n.destinationIp, n.sourcePort, n.destPort',
+                session.run('CREATE (n:Packet {id: $id, sourceIp: $sourceIp, destinationIp: $destinationIp, sourcePort: $sourcePort, destPort: $destPort}) RETURN n.id, n.sourceIp, n.destinationIp, n.sourcePort, n.destPort',
                     {
                         "id": id + "",
                         "sourceIp": body.sourceIp + "",
@@ -643,7 +666,7 @@ module.exports = class Neo {
         })
     }
 
-    // TODO: FIX THIS
+    // TODO: FIX THIS. NOT SURE IF WE WILL EVER USE THIS. WILL PROBABLY WORK SINCE NO MORE IDS
     savePacketBulk(packets) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
@@ -682,8 +705,8 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.id=$id DETACH DELETE n', {"id": id})
-                .then((data) => {
+                .run('MATCH (n:Packet) WHERE ID(n)=$id DETACH DELETE n', {"id": id})
+                .then(() => {
                     session.close();
                     resolve({"success": true, "results": {}})
                 })
@@ -699,7 +722,7 @@ module.exports = class Neo {
         return new Promise((resolve, reject) => {
             session
                 .run('MATCH (n:Packet) WHERE n.sourceIp=$ip DETACH DELETE n', {"ip": ip})
-                .then((data) => {
+                .then(() => {
                     session.close();
                     resolve({"success": true, "results": {}})
                 })
@@ -726,11 +749,27 @@ module.exports = class Neo {
         })
     }
 
-    deletePacketByPort(port) {
+    deletePacketBySourcePort(port) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.port=$port DETACH DELETE n', {"port": port})
+                .run('MATCH (n:Packet) WHERE n.sport=$port DETACH DELETE n', {"port": port})
+                .then(() => {
+                    session.close();
+                    resolve({"success": true, "results": {}})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to delete packet", "err": err})
+                });
+        })
+    }
+
+    deletePacketByDestPort(port) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (n:Packet) WHERE n.dport=$port DETACH DELETE n', {"port": port})
                 .then(() => {
                     session.close();
                     resolve({"success": true, "results": {}})
@@ -768,9 +807,9 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (t:Type)<-[:typeOf]-(p)-[:goingTo]->()-[:locatedIn]->(l) WHERE l.id=$lid AND t.id=$tid return toFloat(count(p)) as c', {
-                    "lid": "" + lid,
-                    "tid": "" + tid
+                .run('MATCH (t:Type)<-[:typeOf]-(p)-[:goingTo]->()-[:locatedIn]->(l) WHERE ID(l)=$lid AND ID(t)=$tid return toFloat(count(p)) as c', {
+                    "lid": lid,
+                    "tid": tid
                 })
                 .then((data) => {
                     let body = [];
@@ -793,15 +832,16 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (l:Location)<-[r:locatedIn]-()<-[:goingTo]-(p) WHERE l.id=$id RETURN p.id, p.sourceIp, p.destinationIp, p.port', {"id": lid})
+                .run('MATCH (l:Location)<-[r:locatedIn]-()<-[:goingTo]-(p) WHERE ID(l)=$id RETURN toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": lid})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("p.id"),
+                            "id": record.get("id"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port")
+                            "sport": record.get("p.sport"),
+                            "dport": record.get("p.dport"),
                         });
                     });
                     session.close();
@@ -818,15 +858,16 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (l:Location)<-[r:locatedIn]-()-[:comingFrom]->(p) WHERE l.id=$id RETURN p.id, p.sourceIp, p.destinationIp, p.port', {"id": lid})
+                .run('MATCH (l:Location)<-[r:locatedIn]-()-[:comingFrom]->(p) WHERE ID(l)=$id RETURN toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": lid})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("p.id"),
+                            "id": record.get("id"),
                             "sourceIp": record.get("p.sourceIp"),
                             "destinationIp": record.get("p.destinationIp"),
-                            "port": record.get("p.port")
+                            "sport": record.get("p.sport"),
+                            "dport": record.get("p.dport"),
                         });
                     });
                     session.close();
@@ -843,13 +884,26 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p:Packet)<-[:comingFrom]-()-[:locatedIn]->(l) WHERE p.id=$id RETURN l.id, l.country', {"id": id})
+                .run(`MATCH (p:Packet)<-[:comingFrom]-()-[:locatedIn]->(l) WHERE ID(p)=$id RETURN toFloat(ID(l)) as id, l.city, l.regionCode, l.areaCode, l.timeZone, l.dmaCode,
+                        l.metroCode, l.countryCode3, l.countryName, l.postalCode, l.longitude, l.countryCode, l.latitude, l.continent`, {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("l.id"),
-                            "country": record.get("l.country")
+                            "id": record.get("id"),
+                            "city": record.get("l.city"),
+                            "regionCode": record.get("l.regionCode"),
+                            "areaCode": record.get("l.areaCode"),
+                            "timeZone": record.get("l.timeZone"),
+                            "dmaCode": record.get("l.dmaCode"),
+                            "metroCode": record.get("l.metroCode"),
+                            "countryCode3": record.get("l.countryCode3"),
+                            "countryName": record.get("l.countryName"),
+                            "postalCode": record.get("l.postalCode"),
+                            "longitude": record.get("l.longitude"),
+                            "countryCode": record.get("l.countryCode"),
+                            "latitude": record.get("l.latitude"),
+                            "continent": record.get("l.continent")
                         });
                     });
                     session.close();
@@ -866,13 +920,12 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device)-[r]-(p:Packet) WHERE p.id=$id RETURN TYPE(r) as direction, n.id, n.name, n.ip', {"id": "" + packetID})
+                .run('MATCH (n:Device)-[r]-(p:Packet) WHERE ID(p)=$id RETURN TYPE(r) as direction, toFloat(ID(n)) as id, n.ip', {"id": packetID})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("n.id"),
-                            "type": record.get("n.name"),
+                            "id": record.get("id"),
                             "ip": record.get("n.ip"),
                             "direction": record.get("direction")
                         });
@@ -897,14 +950,27 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Location) RETURN n.id, n.country')
+                .run(`MATCH(n:Location) RETURN toFloat(ID(n)) as id, n.city, n.regionCode, n.areaCode, n.timeZone, n.dmaCode,
+                n.metroCode, n.countryCode3, n.countryName, n.postalCode, n.longitude, n.countryCode, n.latitude, n.continent`)
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("n.id"),
-                            "country": record.get("n.country")
-                        });
+                            "id": record.get("id"),
+                            "city": record.get("n.city"),
+                            "regionCode": record.get("n.regionCode"),
+                            "areaCode": record.get("n.areaCode"),
+                            "timeZone": record.get("n.timeZone"),
+                            "dmaCode": record.get("n.dmaCode"),
+                            "metroCode": record.get("n.metroCode"),
+                            "countryCode3": record.get("n.countryCode3"),
+                            "countryName": record.get("n.countryName"),
+                            "postalCode": record.get("n.postalCode"),
+                            "longitude": record.get("n.longitude"),
+                            "countryCode": record.get("n.countryCode"),
+                            "latitude": record.get("n.latitude"),
+                            "continent": record.get("n.continent")
+                        })
                     });
                     session.close();
                     resolve({"success": true, "results": body})
@@ -920,13 +986,26 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Location) WHERE n.country=$country RETURN n.id, n.country', {"country": country})
+                .run(`MATCH (n:Location) WHERE n.country=$country RETURN toFloat(ID(n)) as id, n.city, n.regionCode, n.areaCode, n.timeZone, n.dmaCode,
+                        n.metroCode, n.countryCode3, n.countryName, n.postalCode, n.longitude, n.countryCode, n.latitude, n.continent`, {"country": country})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("n.id"),
-                            "country": record.get("n.country")
+                            "id": record.get("id"),
+                            "city": record.get("n.city"),
+                            "regionCode": record.get("n.regionCode"),
+                            "areaCode": record.get("n.areaCode"),
+                            "timeZone": record.get("n.timeZone"),
+                            "dmaCode": record.get("n.dmaCode"),
+                            "metroCode": record.get("n.metroCode"),
+                            "countryCode3": record.get("n.countryCode3"),
+                            "countryName": record.get("n.countryName"),
+                            "postalCode": record.get("n.postalCode"),
+                            "longitude": record.get("n.longitude"),
+                            "countryCode": record.get("n.countryCode"),
+                            "latitude": record.get("n.latitude"),
+                            "continent": record.get("n.continent")
                         });
                     });
                     session.close();
@@ -943,13 +1022,26 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Location) WHERE n.id=$id RETURN n.id, n.country', {"id": id})
+                .run(`MATCH (n:Location) WHERE ID(n)=$id RETURN toFloat(ID(n)) as id, n.city, n.regionCode, n.areaCode, n.timeZone, n.dmaCode,
+                    n.metroCode, n.countryCode3, n.countryName, n.postalCode, n.longitude, n.countryCode, n.latitude, n.continent`, {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("n.id"),
-                            "country": record.get("n.country")
+                            "id": record.get("id"),
+                            "city": record.get("n.city"),
+                            "regionCode": record.get("n.regionCode"),
+                            "areaCode": record.get("n.areaCode"),
+                            "timeZone": record.get("n.timeZone"),
+                            "dmaCode": record.get("n.dmaCode"),
+                            "metroCode": record.get("n.metroCode"),
+                            "countryCode3": record.get("n.countryCode3"),
+                            "countryName": record.get("n.countryName"),
+                            "postalCode": record.get("n.postalCode"),
+                            "longitude": record.get("n.longitude"),
+                            "countryCode": record.get("n.countryCode"),
+                            "latitude": record.get("n.latitude"),
+                            "continent": record.get("n.continent")
                         });
                     });
                     session.close();
@@ -966,7 +1058,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Location)<-[r:locatedIn]-() WHERE n.id=$id RETURN toFloat(COUNT(r)) as c', {"id": id})
+                .run('MATCH (n:Location)<-[r:locatedIn]-() WHERE ID(n)=$id RETURN toFloat(COUNT(r)) as c', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -1032,13 +1124,26 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p:Packet)-[:goingTo]-()-[:locatedIn]->(l) WHERE p.id=$id RETURN l.id, l.country', {"id": id})
+                .run(`MATCH (p:Packet)-[:goingTo]-()-[:locatedIn]->(l) WHERE ID(p)=$id RETURN toFloat(ID(l)) as id, l.city, l.regionCode, l.areaCode, l.timeZone, l.dmaCode,
+                    l.metroCode, l.countryCode3, l.countryName, l.postalCode, l.longitude, l.countryCode, l.latitude, l.continent`, {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("l.id"),
-                            "country": record.get("l.country")
+                            "id": record.get("id"),
+                            "city": record.get("l.city"),
+                            "regionCode": record.get("l.regionCode"),
+                            "areaCode": record.get("l.areaCode"),
+                            "timeZone": record.get("l.timeZone"),
+                            "dmaCode": record.get("l.dmaCode"),
+                            "metroCode": record.get("l.metroCode"),
+                            "countryCode3": record.get("l.countryCode3"),
+                            "countryName": record.get("l.countryName"),
+                            "postalCode": record.get("l.postalCode"),
+                            "longitude": record.get("l.longitude"),
+                            "countryCode": record.get("l.countryCode"),
+                            "latitude": record.get("l.latitude"),
+                            "continent": record.get("l.continent")
                         });
                     });
                     session.close();
@@ -1055,13 +1160,26 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p:Packet)-[:comingFrom]-()-[:locatedIn]->(l) WHERE p.id=$id RETURN l.id, l.country', {"id": id})
+                .run(`MATCH (p:Packet)-[:comingFrom]-()-[:locatedIn]->(l) WHERE ID(p)=$id RETURN toFloat(ID(l)) as id, l.city, l.regionCode, l.areaCode, l.timeZone, l.dmaCode,
+                    l.metroCode, l.countryCode3, l.countryName, l.postalCode, l.longitude, l.countryCode, l.latitude, l.continent`, {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
                         body.push({
-                            "id": record.get("l.id"),
-                            "country": record.get("l.country")
+                            "id": record.get("id"),
+                            "city": record.get("l.city"),
+                            "regionCode": record.get("l.regionCode"),
+                            "areaCode": record.get("l.areaCode"),
+                            "timeZone": record.get("l.timeZone"),
+                            "dmaCode": record.get("l.dmaCode"),
+                            "metroCode": record.get("l.metroCode"),
+                            "countryCode3": record.get("l.countryCode3"),
+                            "countryName": record.get("l.countryName"),
+                            "postalCode": record.get("l.postalCode"),
+                            "longitude": record.get("l.longitude"),
+                            "countryCode": record.get("l.countryCode"),
+                            "latitude": record.get("l.latitude"),
+                            "continent": record.get("l.continent")
                         });
                     });
                     session.close();
@@ -1083,14 +1201,14 @@ module.exports = class Neo {
     createComingFrom(packetId, deviceId) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
-            session.run('MATCH (p:Packet) WHERE p.id=$pid return p.id,p.sourceIp', {"pid": packetId + ""}).then((data) => {
+            session.run('MATCH (p:Packet) WHERE ID(p)=$pid return toFloat(ID(p)) as id, p.sourceIp', {"pid": packetId}).then((data) => {
                 // Expecting one record
                 if (data["records"].length !== 1) {
                     reject({"success": false, "msg": "failed to create relationship", "err": "packet doesn't exist"})
                 }
                 return data["records"][0]
             }).then((packet) => {
-                session.run('MATCH (d:Device) WHERE d.id=$did return d.id,d.ip', {"did": deviceId + ""}).then((data) => {
+                session.run('MATCH (d:Device) WHERE ID(d)=$did return toFload(Id(d)) as id,d.ip', {"did": deviceId}).then((data) => {
                     // Expecting one record
                     if (data["records"].length !== 1) {
                         reject({
@@ -1106,10 +1224,10 @@ module.exports = class Neo {
                         })
                     }
                 }).then(() => {
-                    session.run('MATCH (p:Packet),(d:Device) WHERE p.id=$pid AND d.id=$did CREATE (p)<-[r:comingFrom]-(d)',
+                    session.run('MATCH (p:Packet),(d:Device) WHERE ID(p)=$pid AND ID(d)=$did CREATE (p)<-[r:comingFrom]-(d)',
                         {
-                            "pid": packetId + "",
-                            "did": deviceId + ""
+                            "pid": packetId,
+                            "did": deviceId
                         }).then(() => {
                         session.close();
                         resolve({"success": true})
@@ -1125,14 +1243,14 @@ module.exports = class Neo {
     createGoingTo(packetId, deviceId) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
-            session.run('MATCH (p:Packet) WHERE p.id=$pid return p.id,p.destinationIp', {"pid": packetId + ""}).then((data) => {
+            session.run('MATCH (p:Packet) WHERE ID(p)=$pid return toFloat(ID(p)) as id,p.destinationIp', {"pid": packetId}).then((data) => {
                 // Expecting one record
                 if (data["records"].length !== 1) {
                     reject({"success": false, "msg": "failed to create relationship", "err": "packet doesn't exist"})
                 }
                 return data["records"][0]
             }).then((packet) => {
-                session.run('MATCH (d:Device) WHERE d.id=$did return d.id,d.ip', {"did": deviceId + ""}).then((data) => {
+                session.run('MATCH (d:Device) WHERE ID(d)=$did return toFloat(ID(d)) as id,d.ip', {"did": deviceId}).then((data) => {
                     // Expecting one record
                     if (data["records"].length !== 1) {
                         reject({
@@ -1148,10 +1266,10 @@ module.exports = class Neo {
                         })
                     }
                 }).then(() => {
-                    session.run('MATCH (p:Packet),(d:Device) WHERE p.id=$pid AND d.id=$did CREATE (p)-[r:goingTo]->(d)',
+                    session.run('MATCH (p:Packet),(d:Device) WHERE ID(p)=$pid AND ID(d)=$did CREATE (p)-[r:goingTo]->(d)',
                         {
-                            "pid": packetId + "",
-                            "did": deviceId + ""
+                            "pid": packetId,
+                            "did": deviceId
                         }).then(() => {
                         session.close();
                         resolve({"success": true})
@@ -1167,13 +1285,13 @@ module.exports = class Neo {
     createTypeOf(packetId, typeId) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
-            session.run('MATCH (p:Packet) WHERE p.id=$pid return p.id', {"pid": packetId + ""}).then((data) => {
+            session.run('MATCH (p:Packet) WHERE ID(p)=$pid RETURN toFloat(ID(p)) as id', {"pid": packetId}).then((data) => {
                 // Expecting one record
                 if (data["records"].length !== 1) {
                     reject({"success": false, "msg": "failed to create relationship", "err": "packet doesn't exist"})
                 }
             }).then(() => {
-                session.run('MATCH (t:Type) WHERE t.id=$tid return t.id', {"tid": typeId + ""}).then((data) => {
+                session.run('MATCH (t:Type) WHERE ID(t)=$tid RETURN toFloat(ID(t)) as id', {"tid": typeId}).then((data) => {
                     // Expecting one record
                     if (data["records"].length !== 1) {
                         reject({
@@ -1183,10 +1301,10 @@ module.exports = class Neo {
                         })
                     }
                 }).then(() => {
-                    session.run('MATCH (p:Packet),(t:Type) WHERE p.id=$pid AND t.id=$tid CREATE (p)-[r:typeOf]->(t)',
+                    session.run('MATCH (p:Packet),(t:Type) WHERE ID(p)=$pid AND ID(t)=$tid CREATE (p)-[r:typeOf]->(t)',
                         {
-                            "pid": packetId + "",
-                            "tid": typeId + ""
+                            "pid": packetId,
+                            "tid": typeId
                         }).then(() => {
                         session.close();
                         resolve({"success": true})
@@ -1202,13 +1320,13 @@ module.exports = class Neo {
     createLocatedIn(deviceId, locationId) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
-            session.run('MATCH (d:Device) WHERE d.id=$did return d.id', {"did": deviceId + ""}).then((data) => {
+            session.run('MATCH (d:Device) WHERE ID(d)=$did return toFloat(ID(d)) as id', {"did": deviceId}).then((data) => {
                 // Expecting one record
                 if (data["records"].length !== 1) {
                     reject({"success": false, "msg": "failed to create relationship", "err": "device doesn't exist"})
                 }
             }).then(() => {
-                session.run('MATCH (l:Location) WHERE l.id=$lid return l.id', {"lid": locationId + ""}).then((data) => {
+                session.run('MATCH (l:Location) WHERE ID(l)=$lid return toFloat(ID(l)) as id', {"lid": locationId}).then((data) => {
                     // Expecting one record
                     if (data["records"].length !== 1) {
                         reject({
@@ -1218,10 +1336,10 @@ module.exports = class Neo {
                         })
                     }
                 }).then(() => {
-                    session.run('MATCH (d:Device),(l:Location) WHERE d.id=$did AND l.id=$lid CREATE (d)-[r:locatedIn]->(l)',
+                    session.run('MATCH (d:Device),(l:Location) WHERE ID(d)=$did AND ID(l)=$lid CREATE (d)-[r:locatedIn]->(l)',
                         {
-                            "did": deviceId + "",
-                            "lid": locationId + ""
+                            "did": deviceId,
+                            "lid": locationId
                         }).then(() => {
                         session.close();
                         resolve({"success": true})
@@ -1254,9 +1372,10 @@ module.exports = class Neo {
             }
         }
         if (packetData.hasOwnProperty("HTTPLOAD")) {
-            packet["typeName"] = packetData["HTTPLOAD"].hasOwnProperty("Content-Type") ? packetData["HTTPLOAD"]["Content-Type"] : "";
+            console.log("content-type:", packetData["HTTPLOAD"]["Content-Type"])
+            packet["typeName"] = packetData["HTTPLOAD"].hasOwnProperty("Content-Type") ? packetData["HTTPLOAD"]["Content-Type"] : "Unknown";
         } else {
-            packet["typeName"] = "Unkown";
+            packet["typeName"] = "Unknown";
         }
 
         packet["DESTINATION"] = packetData.hasOwnProperty("DESTINATION") ? this.extractLocation(packetData["DESTINATION"]) : this.setEmptyLocation();
@@ -1266,14 +1385,15 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             console.log("SOURCE: ", packet["SOURCE"]);
-            return session.run(`
-               MERGE (np:Packet {destinationIp:$destinationIp, sport:$sport, dport:$dport, sourceIp:$sourceIp})
-               MERGE (nt:Type {name:$typeName})
-               MERGE (nsl:Location {city:$sCity,regionCode:$sRegionCode,areaCode:$sAreaCode,timeZone:$sTimeZone,dmaCode:$sDmaCode,
-               metroCode:$sMetroCode,countryCode3:$sCountryCodeThree,countryName:$sCountryName,postalCode:$sPostalCode,longitude:$sLong,countryCode:$sCountryCode,
-               latitude:$sLat,continent:$sContinent})
-               MERGE (nsd:Device {ip:$sourceIp})
-               RETURN toFloat(ID(np)) as np, toFloat(ID(nt)) as nt, toFloat(ID(nsl)) as nsl, toFloat(ID(nsd)) as nsd`, {
+            return session.run(`MERGE(np:Packet{destinationIp:$destinationIp, sport:$sport, dport:$dport, sourceIp:$sourceIp})
+                                MERGE(nt:Type{type:$typeName})
+                                MERGE(nsl:Location{city:$sCity, regionCode:$sRegionCode, areaCode:$sAreaCode, 
+                                    timeZone:$sTimeZone, dmaCode:$sDmaCode,metroCode:$sMetroCode, 
+                                    countryCode3:$sCountryCodeThree, countryName:$sCountryName, postalCode:$sPostalCode,
+                                    longitude:$sLong, countryCode:$sCountryCode,latitude:$sLat, continent:$sContinent})
+                                MERGE(nsd:Device{ip:$sourceIp}) 
+                                RETURN toFloat(ID(np)) as np, toFloat(ID(nt)) as nt, toFloat(ID(nsl)) as nsl, 
+                                toFloat(ID(nsd)) as nsd`, {
                 "destinationIp": packet["destinationIp"],
                 "sourceIp": packet["sourceIp"],
                 "sport": packet["sPort"],
@@ -1305,13 +1425,14 @@ module.exports = class Neo {
                     ids["nt.id"] = data["records"][0].get("nt");
                     ids["nsl.id"] = data["records"][0].get("nsl");
                     ids["nsd.id"] = data["records"][0].get("nsd");
-                    console.log("Dest: ", packet["DESTINATION"]);
-                    return session.run(`
-                        MERGE (ndl:Location {city:$dCity,regionCode:$dRegionCode,areaCode:$dAreaCode,timeZone:$dTimeZone,dmaCode:$dDmaCode,
-                           metroCode:$dMetroCode,countryCode3:$dCountryCodeThree,countryName:$dCountryName,postalCode:$dPostalCode,longitude:$dLong,countryCode:$dCountryCode,
-                           latitude:$dLat,continent:$dContinent})
-                        MERGE (ndd:Device {ip:$destinationIp})
-                        RETURN toFloat(ID(ndd)) as ndd, toFloat(ID(ndl)) as ndl`, {
+
+                    return session.run(`MERGE(ndl:Location{city:$dCity, regionCode:$dRegionCode, areaCode:$dAreaCode, 
+                                            timeZone:$dTimeZone, dmaCode:$dDmaCode,metroCode:$dMetroCode, 
+                                            countryCode3:$dCountryCodeThree, countryName:$dCountryName, 
+                                            postalCode:$dPostalCode, longitude:$dLong, countryCode:$dCountryCode,
+                                            latitude:$dLat, continent:$dContinent})
+                                        MERGE(ndd:Device{ip:$destinationIp})
+                                        RETURN toFloat(ID(ndd)) as ndd, toFloat(ID(ndl)) as ndl`, {
                         "destinationIp": packet["destinationIp"],
                         "dCity": packet["DESTINATION"]["city"],
                         "dRegionCode": packet["DESTINATION"]["regionCode"],
@@ -1340,18 +1461,18 @@ module.exports = class Neo {
 
                             console.log("IDS: ", ids);
 
-                            return session.run(`MATCH (p:Packet) WHERE ID(p)=$np WITH p
-                                MATCH (t:Type) WHERE ID(t)=$nt WITH p,t  
-                                MATCH (sl:Location) WHERE ID(sl)=$nsl WITH p,t,sl
-                                MATCH (dl:Location) WHERE ID(dl)=$ndl WITH p,t,sl,dl
-                                MATCH (sd:Device) WHERE ID(sd)=$nsd WITH p,t,sl,dl,sd
-                                MATCH (dd:Device) WHERE ID(dd)=$ndd WITH p,t,sl,dl,sd,dd
-                                
-                                CREATE (p)-[:goingTo]->(dd)
-                                CREATE (p)<-[:comingFrom]-(sd)
-                                CREATE (p)-[:typeOf]->(t)
-                                CREATE (sd)-[:locatedIn]->(sl)
-                                CREATE (dd)-[:locatedIn]->(dl)`, {
+                            return session.run(`MATCH(p:Packet) WHERE ID(p) = $np WITH p
+                                                MATCH(t:Type)WHERE ID(t) = $nt WITH p, t 
+                                                MATCH(sl:Location) WHERE ID(sl) = $nsl WITH p, t, sl 
+                                                MATCH(dl:Location) WHERE ID(dl) = $ndl WITH p, t, sl, dl
+                                                MATCH(sd:Device) WHERE ID(sd) = $nsd WITH p, t, sl, dl, sd
+                                                MATCH(dd:Device) WHERE ID(dd) = $ndd WITH p, t, sl, dl, sd, dd
+                                                
+                                                CREATE(p) - [:goingTo]->(dd)
+                                                CREATE(p) < -[:comingFrom]-(sd)
+                                                CREATE(p) - [:typeOf]->(t)
+                                                CREATE(sd) - [:locatedIn]->(sl)
+                                                CREATE(dd) - [:locatedIn]->(dl)`, {
                                 "np": ids["np.id"],
                                 "nt": ids["nt.id"],
                                 "nsl": ids["nsl.id"],
