@@ -61,14 +61,13 @@ export class LocationGridComponent implements OnInit {
     });
   }
 
-  openDialog() {
+  openDialog(mode: string) {
     let selected = this.gridOptions.api.getSelectedNodes();
     this.dialogRef = this.dialog.open(LocationGridDialogComponent, {
       width: "90%",
       height: "80%",
-      data: {data: selected}
+      data: {data: selected, mode: mode}
     });
-    console.log(selected);
   }
 
   enableButtons() {

@@ -1,13 +1,46 @@
-<h1>Location</h1>
-<div style="width:50%">
-<mat-grid-list cols="3" rowHeight="20px">
-  <mat-grid-tile *ngFor="let tile of tiles"
-                 [colspan]="1"
-                 [rowspan]="1"
-                 >{{tile.label}}: {{tile.data}}
-  </mat-grid-tile>
-</mat-grid-list>
+<h1>Location: {{location["id"]}}</h1>
+<div *ngIf="detailsFlag" [hidden]="!loaded">
+  <div>
+    <mat-list dense>
+      <mat-list-item>
+        <p matLine *ngFor="let tile of locationTiles">
+          {{tile.label}}: {{tile.data}}
+        </p>
+      </mat-list-item>
+    </mat-list>
+  </div>
+  <span style="font-weight:bold;font-size:20px;">Details</span>
+  <ag-grid-angular
+    style="width: 1000px; height: 400px;"
+    class="ag-theme-blue"
+    [enableSorting]="true"
+    [enableFilter]="true"
+    [rowData]="gridData"
+    [columnDefs]="gridColumns"
+    [gridOptions]="gridOptions"
+    (gridReady)="onGridReady($event)"></ag-grid-angular>
 </div>
-<div>
-  <h2>More stuff</h2>
+<div *ngIf="devicesFlag" [hidden]="!loaded">
+  <span style="font-weight:bold;font-size:20px;">Devices</span>
+  <ag-grid-angular
+    style="width: 1000px; height: 400px;"
+    class="ag-theme-blue"
+    [enableSorting]="true"
+    [enableFilter]="true"
+    [rowData]="gridData"
+    [columnDefs]="gridColumns"
+    [gridOptions]="gridOptions"
+    (gridReady)="onGridReady($event)"></ag-grid-angular>
+</div>
+<div *ngIf="packetsFlag" [hidden]="!loaded">
+  <span style="font-weight:bold;font-size:20px;">Packets</span>
+  <ag-grid-angular
+    style="width: 1000px; height: 400px;"
+    class="ag-theme-blue"
+    [enableSorting]="true"
+    [enableFilter]="true"
+    [rowData]="gridData"
+    [columnDefs]="gridColumns"
+    [gridOptions]="gridOptions"
+    (gridReady)="onGridReady($event)"></ag-grid-angular>
 </div>

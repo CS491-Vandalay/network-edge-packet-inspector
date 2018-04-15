@@ -1,13 +1,32 @@
-<h1>Packet</h1>
-<div style="width:80%">
-<mat-grid-list cols="4" rowHeight="20px">
-  <mat-grid-tile *ngFor="let tile of tiles"
-                 [colspan]="1"
-                 [rowspan]="1"
-                 >{{tile.label}}: {{tile.data}}
-  </mat-grid-tile>
-</mat-grid-list>
-</div>
+<h1>Details</h1>
 <div>
-  <h2>More stuff</h2>
+  <mat-list dense>
+    <h3 matSubheader>Packet</h3>
+    <mat-list-item>
+      <p matLine *ngFor="let tile of packetTiles">
+        {{tile.label}}: {{tile.data}}
+      </p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+    <h3 matSubheader>Type</h3>
+    <mat-list-item>
+      <p matLine *ngFor="let tile of typeTiles">
+        {{tile.label}}: {{tile.data}}
+      </p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+    <h3 matSubheader>Device</h3>
+    <mat-list-item>
+      <p matLine *ngFor="let tile of deviceTiles">
+        {{tile.label}}: {{tile.data}}
+      </p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+    <h3 matSubheader>Location</h3>
+    <mat-list-item>
+      <p matLine *ngFor="let tile of locationTiles">
+        {{tile.label}}: {{tile.data}}
+      </p>
+    </mat-list-item>
+  </mat-list>
 </div>

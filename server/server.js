@@ -275,8 +275,8 @@ app.get('/api/pcap/getDeviceLocation/:id', (req, res) => {
     });
 });
 
-app.get('/api/pcap/getDevicesWithLocation/', (req, res) => {
-    neoObj.getDevicesWithLocation().then((data) => {
+app.get('/api/pcap/getDevicesWithLocation/:id', (req, res) => {
+    neoObj.getDevicesWithLocation(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -409,6 +409,15 @@ app.get('/api/pcap/getSourceOfPacket/:id', (req, res) => {
     neoObj.getSourceLocationOfPacket(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getTypeCountForLocation/:id',(req,res)=>{
+    neoObj.getNumTypesForLocation(parseInt(req.params.id)).then((data)=>{
+        res.jsonp(data);
+    }).catch((err)=>{
+        console.log(err);
         res.jsonp(err);
     })
 });

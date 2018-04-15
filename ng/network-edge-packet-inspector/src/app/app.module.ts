@@ -1,7 +1,7 @@
 import {BrowserModule} from "@angular/platform-browser";
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NgModule} from "@angular/core";
-import {MatButtonModule, MatSidenavModule, MatDialogModule} from "@angular/material";
+import {MatButtonModule, MatSidenavModule, MatDialogModule, MatListModule} from "@angular/material";
 import {MatDividerModule} from '@angular/material/divider';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {AppComponent} from "./app.component";
@@ -47,6 +47,7 @@ const appRoutes: Routes = [
     MatDividerModule,
     MatDialogModule,
     MatGridListModule,
+    MatListModule,
     AgGridModule.withComponents([]),
     RouterModule.forRoot(appRoutes, {})
   ],

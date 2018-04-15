@@ -143,7 +143,8 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('Match (d:Device)-[]-(p:Packet)-[:typeOf]-(t:Type) where ID(d)=$id return t.type, toFloat(count(t)) as c', {'id': id})
+                .run(`MATCH (d:Device)-[]-(p:Packet) WHERE ID(d)=$id with DISTINCT p
+                      MATCH (p)-[:typeOf]-(t:Type) return toFloat(COUNT(t)) as c, t.type`, {'id': id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -614,7 +615,7 @@ module.exports = class Neo {
                     data["records"].forEach((record) => {
                         body.push({
                             "id": record.get("id"),
-                            "name": record.get("t.type")
+                            "type": record.get("t.type")
                         });
                     });
                     session.close();
@@ -832,7 +833,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (l:Location)<-[r:locatedIn]-()<-[:goingTo]-(p) WHERE ID(l)=$id RETURN toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": lid})
+                .run('MATCH (l:Location)<-[r:locatedIn]-()<-[:goingTo]-(p) WHERE ID(l)=$id RETURN DISTINCT toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": lid})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -1192,6 +1193,56 @@ module.exports = class Neo {
         })
     }
 
+    getDevicesWithLocation(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run(`MATCH (l:Location)-[:locatedIn]-(d:Device) where ID(l)=$id 
+                    RETURN DISTINCT toFloat(ID(d)) as id, d.ip`, {"id": id})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get('id'),
+                            "ip": record.get('d.ip')
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getNumTypesForLocation(id) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run(`MATCH (l:Location)-[]-(d:Device) WHERE ID(l)=$id with DISTINCT d
+                    MATCH (d)-[]-(p:Packet) with DISTINCT p
+                    MATCH (p)-[:typeOf]-(t:Type) return toFloat(COUNT(t)) as c, t.type`, {'id': id})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "type": record.get("t.type"),
+                            "count": record.get('c')
+                        });
+                    });
+                    console.log("body:", body);
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get type count", "err": err})
+                });
+        })
+    }
+
     /************************************************************
      *
      *          PCAP RELATIONSHIPS
@@ -1468,11 +1519,11 @@ module.exports = class Neo {
                                                 MATCH(sd:Device) WHERE ID(sd) = $nsd WITH p, t, sl, dl, sd
                                                 MATCH(dd:Device) WHERE ID(dd) = $ndd WITH p, t, sl, dl, sd, dd
                                                 
-                                                CREATE(p) - [:goingTo]->(dd)
-                                                CREATE(p) < -[:comingFrom]-(sd)
-                                                CREATE(p) - [:typeOf]->(t)
-                                                CREATE(sd) - [:locatedIn]->(sl)
-                                                CREATE(dd) - [:locatedIn]->(dl)`, {
+                                                MERGE(p) - [:goingTo]->(dd)
+                                                MERGE(p) < -[:comingFrom]-(sd)
+                                                MERGE(p) - [:typeOf]->(t)
+                                                MERGE(sd) - [:locatedIn]->(sl)
+                                                MERGE(dd) - [:locatedIn]->(dl)`, {
                                 "np": ids["np.id"],
                                 "nt": ids["nt.id"],
                                 "nsl": ids["nsl.id"],

@@ -24,7 +24,6 @@ export class DeviceGridDialogComponent implements OnInit {
   private gridTwoOptions: GridOptions;
 
   constructor(private dataService: DataServiceService,
-              public dialogRef: MatDialogRef<DeviceGridDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any) {
   }
 
@@ -58,7 +57,7 @@ export class DeviceGridDialogComponent implements OnInit {
   onGridReady(params) {
     console.log("grid ready");
     if (this.packetsFlag) {
-      this.gridColumns = [{headerName: "Id", field: "id"},
+      this.gridColumns = [{headerName: "Id", field: "id", width: 80, suppressSizeToFit:true},
         {headerName: "Source IP", field: "sourceIp"},
         {headerName: "Destination IP", field: "destinationIp"},
         {headerName: "Source Port", field: "sport"},
@@ -86,10 +85,17 @@ export class DeviceGridDialogComponent implements OnInit {
           }
           this.gridOptions.api.setRowData(this.gridData);
           this.loaded = true;
+          // params.api.sizeColumnsToFit();
+
+          let allColumnIds = [];
+          this.gridOptions.columnApi.getAllColumns().forEach(function(column) {
+            allColumnIds.push(column.getColId());
+          });
+          this.gridOptions.columnApi.autoSizeColumns(allColumnIds,null);
         });
     }
     else if (this.deviceFlag) {
-      this.gridColumns = [{headerName: "Id", field: "id"},
+      this.gridColumns = [{headerName: "Id", field: "id", width: 80, suppressSizeToFit:true},
         {headerName: "City", field: "city"},
         {headerName: "Region Code", field: "regionCode"},
         {headerName: "Area Code", field: "areaCode"},
@@ -121,13 +127,6 @@ export class DeviceGridDialogComponent implements OnInit {
         this.loaded = true;
       });
     }
-    // params.api.sizeColumnsToFit();
-
-    let allColumnIds = [];
-    this.gridOptions.columnApi.getAllColumns().forEach(function(column) {
-      allColumnIds.push(column.getColId());
-    });
-    this.gridOptions.columnApi.autoSizeColumns(allColumnIds,null);
   }
 
 
@@ -136,7 +135,7 @@ export class DeviceGridDialogComponent implements OnInit {
     if (this.deviceFlag) {
       this.gridTwoColumns = [{headerName: "Type", field: "type"},
         {headerName: "Count", field: "count"}];
-      this.dataService.getTypesForDevice(this.device["id"]).subscribe((data) => {
+      this.dataService.getTypesCountForDevice(this.device["id"]).subscribe((data) => {
         // Push the packet results into data
         this.gridTwoData = [];
         if (data["results"]) {

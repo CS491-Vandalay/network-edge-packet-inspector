@@ -5,46 +5,73 @@ import {Observable} from "rxjs";
 @Injectable()
 export class DataServiceService {
 
+  private basePcap = "http://localhost:8090/api/pcap/";
+
   constructor(private http: HttpClient) {
   }
 
   getPackets(): Observable<any> {
     console.log("Getting packets");
-    return this.http.get("http://localhost:8090/api/pcap/getPackets")
+    return this.http.get(this.basePcap + "getPackets")
   }
 
-  getPacketsFromDevice(id: number): Observable<any>{
+  getPacketsFromDevice(id: number): Observable<any> {
     console.log("Getting packets for device id: ", id);
-    return this.http.get("http://localhost:8090/api/pcap/getPacketsFromDevice/"+id)
+    return this.http.get(this.basePcap + "getPacketsFromDevice/" + id)
   }
 
-  getPacketsToDevice(id: number): Observable<any>{
+  getPacketsToDevice(id: number): Observable<any> {
     console.log("Getting packets for device id: ", id);
-    return this.http.get("http://localhost:8090/api/pcap/getPacketsToDevice/"+id)
+    return this.http.get(this.basePcap + "getPacketsToDevice/" + id)
   }
 
   getDevices(): Observable<any> {
     console.log("Getting devices");
-    return this.http.get("http://localhost:8090/api/pcap/getDevices")
+    return this.http.get(this.basePcap + "getDevices")
   }
 
   getLocations(): Observable<any> {
     console.log("Getting locations");
-    return this.http.get("http://localhost:8090/api/pcap/getLocations")
+    return this.http.get(this.basePcap + "getLocations")
   }
 
-  getLocationByDeviceId(id: number){
+  getLocationByDeviceId(id: number) {
     console.log("Getting location of device: ", id);
-    return this.http.get("http://localhost:8090/api/pcap/getDeviceLocation/"+id)
+    return this.http.get(this.basePcap + "getDeviceLocation/" + id)
   }
 
   getTypes(): Observable<any> {
     console.log("Getting locations");
-    return this.http.get("http://localhost:8090/api/pcap/getTypes")
+    return this.http.get(this.basePcap + "getTypes")
   }
 
-  getTypesForDevice(id: number){
+  getTypesCountForDevice(id: number) {
     console.log("Getting types for device: ", id);
-    return this.http.get("http://localhost:8090/api/pcap/getTypeCountForDevice/"+id);
+    return this.http.get(this.basePcap + "getTypeCountForDevice/" + id);
+  }
+
+  getDeviceForPacket(id: number) {
+    console.log("Getting device for packet: ", id);
+    return this.http.get(this.basePcap + "getDeviceByPacket/" + id);
+  }
+
+  getPacketType(id: number){
+    console.log("Getting type for packet: ", id);
+    return this.http.get(this.basePcap + "getPacketType/" + id);
+  }
+
+  getDevicesWithLocation(id: number){
+    console.log("Getting devices for location: ", id);
+    return this.http.get(this.basePcap + "getDevicesWithLocation/" + id);
+  }
+
+  getPacketsFromLocation(id: number){
+    console.log("Getting devices for location: ", id);
+    return this.http.get(this.basePcap + "getPacketsFromLocation/" + id);
+  }
+
+  getTypesCountForLocation(id: number){
+    console.log("Getting type counts for location: ", id);
+    return this.http.get(this.basePcap + "getTypeCountForLocation/" + id);
   }
 }
