@@ -20,7 +20,6 @@ export class TypeGridDialogComponent implements OnInit {
   private gridOptions: GridOptions;
 
   constructor(private dataService: DataServiceService,
-              public dialogRef: MatDialogRef<TypeGridDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any) {
   }
 

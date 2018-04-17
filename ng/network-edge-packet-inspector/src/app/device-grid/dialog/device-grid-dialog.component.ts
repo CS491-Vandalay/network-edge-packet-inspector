@@ -40,7 +40,6 @@ export class DeviceGridDialogComponent implements OnInit {
     console.log("packetsFlag", this.packetsFlag);
 
     this.tiles.push(
-      {label: "Name", data: this.device["name"]},
       {label: "IP", data: this.device["ip"]});
 
     this.gridOptions = <GridOptions>{

@@ -13,6 +13,7 @@ import {TypeGridComponent} from "./type-grid/type-grid.component";
 import {TypeGridDialogComponent} from "./type-grid/dialog/type-grid-dialog.component";
 import {LocationGridComponent} from "./location-grid/location-grid.component";
 import {LocationGridDialogComponent} from "./location-grid/dialog/location-grid-dialog.component";
+import {UploadComponent} from "./upload/upload.component";
 import {HttpClientModule} from "@angular/common/http";
 import {AgGridModule} from "ag-grid-angular";
 import {DataServiceService} from "./data-service.service";
@@ -36,7 +37,8 @@ const appRoutes: Routes = [
     TypeGridComponent,
     TypeGridDialogComponent,
     LocationGridComponent,
-    LocationGridDialogComponent
+    LocationGridDialogComponent,
+    UploadComponent
   ],
   imports: [
     BrowserModule,
@@ -53,11 +55,12 @@ const appRoutes: Routes = [
   ],
   providers: [DataServiceService],
   bootstrap: [AppComponent],
-  entryComponents:[
+  entryComponents: [
     DeviceGridDialogComponent,
     LocationGridDialogComponent,
     PacketGridDialogComponent,
-    TypeGridDialogComponent
+    TypeGridDialogComponent,
+    UploadComponent
   ]
 })
 

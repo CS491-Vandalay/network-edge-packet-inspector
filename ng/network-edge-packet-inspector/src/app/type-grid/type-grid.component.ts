@@ -1,7 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {DataServiceService} from "../data-service.service";
 import {GridOptions} from "ag-grid/main";
-import {MatButtonModule} from '@angular/material/button';
 import {MatDialog} from "@angular/material";
 import {TypeGridDialogComponent} from "./dialog/type-grid-dialog.component";
 
@@ -54,7 +53,6 @@ export class TypeGridComponent implements OnInit {
       height: "80%",
       data: {data: selected, mode: option}
     });
-    console.log(selected);
   }
 
   enableButtons() {

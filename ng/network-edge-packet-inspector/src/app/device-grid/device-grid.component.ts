@@ -23,7 +23,8 @@ export class DeviceGridComponent implements OnInit {
 
   ngOnInit() {
     this.gridOptions = <GridOptions>{
-      rowSelection: 'single'
+      rowSelection: 'single',
+      enableColResize: true
     };
     this.deviceData = [];
 

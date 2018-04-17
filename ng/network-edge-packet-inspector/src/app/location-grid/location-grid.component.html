@@ -1,11 +1,17 @@
 <div [hidden]="loaded">LOADING...</div>
 <div [hidden]="!loaded">
   <h1>Location</h1>
-  <button mat-button [disabled]="!rowSelected" (click)="openDialog('details')">View Location Details</button>
-  <button mat-button [disabled]="!rowSelected" (click)="openDialog('packets')">View Packets</button>
-  <button mat-button [disabled]="!rowSelected" (click)="openDialog('devices')">View Devices</button>
+  <button mat-button [disabled]="!rowSelected" [ngStyle]="{'color':!rowSelected ? 'gray' : 'white' }"
+          (click)="openDialog('details')">View Location Details
+  </button>
+  <button mat-button [disabled]="!rowSelected" [ngStyle]="{'color':!rowSelected ? 'gray' : 'white' }"
+          (click)="openDialog('packets')">View Packets
+  </button>
+  <button mat-button [disabled]="!rowSelected" [ngStyle]="{'color':!rowSelected ? 'gray' : 'white' }"
+          (click)="openDialog('devices')">View Devices
+  </button>
   <ag-grid-angular
-    style="width: 100%; height: 400px;"
+    style="width: 185vh;  height: 80vh"
     class="ag-theme-blue"
     [enableSorting]="true"
     [enableFilter]="true"

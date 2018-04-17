@@ -22,7 +22,8 @@ export class PacketGridComponent implements OnInit {
 
   ngOnInit() {
     this.gridOptions= <GridOptions>{
-      rowSelection: 'single'
+      rowSelection: 'single',
+      enableColResize: true
     };
     this.packetData = [];
 

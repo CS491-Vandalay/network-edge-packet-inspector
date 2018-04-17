@@ -1,9 +1,11 @@
 <div [hidden]="loaded">LOADING...</div>
 <div [hidden]="!loaded">
   <h1>Packets</h1>
-  <button mat-button [disabled]="!rowSelected" (click)="openDialog()">View Packet Details</button>
+  <button mat-button [disabled]="!rowSelected" [ngStyle]="{'color':!rowSelected ? 'gray' : 'white' }"
+          (click)="openDialog()">View Packet Details
+  </button>
   <ag-grid-angular
-    style="width: 1000px; height: 400px;"
+    style="width: 185vh; height: 80vh"
     class="ag-theme-blue"
     [enableSorting]="true"
     [enableFilter]="true"

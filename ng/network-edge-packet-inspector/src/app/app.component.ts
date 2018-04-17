@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
+import {MatDialog} from "@angular/material";
+import {UploadComponent} from "./upload/upload.component"
 
 @Component({
   selector: 'app',
@@ -6,11 +8,23 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app';
+  private dialogRef: any;
+  private title = 'Network Edge Packet Inspector';
   private routeList = [
     "Packets",
     "Devices",
     "Locations",
-    "Types"
-  ]
+    "Types",
+    "Upload"
+  ];
+
+  constructor(private dialog: MatDialog){}
+
+  openDialog() {
+    this.dialogRef = this.dialog.open(UploadComponent, {
+      width: "90%",
+      height: "80%",
+      data: {}
+    });
+  }
 }

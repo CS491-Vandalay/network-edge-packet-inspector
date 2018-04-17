@@ -1,12 +1,13 @@
-<mat-sidenav-container style="background-color:darkgrey;">
+<mat-sidenav-container fullscreen style="background-color:#003d25;color:white">
   <mat-sidenav
-    style="background-color:deepskyblue;"
+    style="background-color:#006940;color:white;"
     mode="side"
     [fixedInViewport]="true"
     opened>
     <div *ngFor="let route of routeList">
       <div>
-        <button mat-button routerLinkActive="active" routerLink="/{{route}}">{{route}}</button>
+        <button *ngIf="route!='Upload'" mat-button routerLinkActive="active" routerLink="/{{route}}">{{route}}</button>
+        <button *ngIf="route=='Upload'" mat-button routerLinkActive="active" (click)="openDialog()">{{route}}</button>
       </div>
       <mat-divider></mat-divider>
     </div>
