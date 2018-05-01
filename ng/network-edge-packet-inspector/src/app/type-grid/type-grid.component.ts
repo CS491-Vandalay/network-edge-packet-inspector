@@ -47,11 +47,18 @@ export class TypeGridComponent implements OnInit {
   }
 
   openDialog(option: string) {
+    let title = "";
+    if (option == "type")
+      title = "Type";
+    if (option == "devices")
+      title = "Devices";
+    if (option == "packets")
+      title = "Packets";
     let selected = this.gridOptions.api.getSelectedNodes();
     this.dialogRef = this.dialog.open(TypeGridDialogComponent, {
       width: "90%",
       height: "80%",
-      data: {data: selected, mode: option}
+      data: {data: selected, mode: option, title: title}
     });
   }
 

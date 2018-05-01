@@ -168,7 +168,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE t.type=$type return toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"$type": type})
+                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE t.type=$type return toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"type": type})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -178,6 +178,55 @@ module.exports = class Neo {
                             "destinationIp": record.get("p.destinationIp"),
                             "sport": record.get("p.sport"),
                             "dport": record.get("p.dport"),
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getPacketsByTypeId(typeId) {
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE ID(t)=$id return toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": typeId})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("id"),
+                            "sourceIp": record.get("p.sourceIp"),
+                            "destinationIp": record.get("p.destinationIp"),
+                            "sport": record.get("p.sport"),
+                            "dport": record.get("p.dport"),
+                        });
+                    });
+                    session.close();
+                    resolve({"success": true, "results": body})
+                })
+                .catch((err) => {
+                    session.close();
+                    reject({"success": false, "msg": "failed to get packets", "err": err})
+                });
+        })
+    }
+
+    getDevicesByTypeId(typeId){
+        let session = this.driver.session();
+        return new Promise((resolve, reject) => {
+            session
+                .run('MATCH (t:Type)-[:typeOf]-(p:Packet)-[:comingFrom |:goingTo]-(d:Device) WHERE ID(t)=$id RETURN toFloat(ID(d)) as id, d.ip', {"id": typeId})
+                .then((data) => {
+                    let body = [];
+                    data["records"].forEach((record) => {
+                        body.push({
+                            "id": record.get("id"),
+                            "ip": record.get("d.ip")
                         });
                     });
                     session.close();
@@ -1435,7 +1484,6 @@ module.exports = class Neo {
 
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
-            console.log("SOURCE: ", packet["SOURCE"]);
             return session.run(`MERGE(np:Packet{destinationIp:$destinationIp, sport:$sport, dport:$dport, sourceIp:$sourceIp})
                                 MERGE(nt:Type{type:$typeName})
                                 MERGE(nsl:Location{city:$sCity, regionCode:$sRegionCode, areaCode:$sAreaCode, 
@@ -1465,7 +1513,6 @@ module.exports = class Neo {
                 "sContinent": packet["SOURCE"]["continent"]
             }).then((data) => {
                 if (data["records"].length !== 1) {
-                    console.log("here");
                     reject({
                         "success": false,
                         "msg": "failed to create relationship",
@@ -1500,7 +1547,6 @@ module.exports = class Neo {
                         "dContinent": packet["DESTINATION"]["continent"]
                     }).then((data) => {
                         if (data["records"].length !== 1) {
-                            console.log("here2");
                             reject({
                                 "success": false,
                                 "msg": "failed to create relationship",
@@ -1509,8 +1555,6 @@ module.exports = class Neo {
                         } else {
                             ids["ndd.id"] = data["records"][0].get("ndd");
                             ids["ndl.id"] = data["records"][0].get("ndl");
-
-                            console.log("IDS: ", ids);
 
                             return session.run(`MATCH(p:Packet) WHERE ID(p) = $np WITH p
                                                 MATCH(t:Type)WHERE ID(t) = $nt WITH p, t 

@@ -9,7 +9,19 @@ let express = require('express'),
     app = express(),
     neoClass = require('./neo.js'),
     bodyParser = require('body-parser'),
-    cors = require('cors');
+    cors = require('cors'),
+    fs = require('fs');
+
+let multer = require('multer');
+let storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, "./uploads");
+    }, filename: function (req, file, callback) {
+        callback(null, Date.now() +"-"+ file.originalname);
+    }
+});
+
+let upload = multer({storage: storage}).single('pcap');
 
 template = require('pug').compileFile(__dirname + '/src/docs/api-docs/templates/base.pug');
 
@@ -23,6 +35,46 @@ app.use(cors());
 
 let server = app.listen(8090, () => {
     console.log("Server listening on port 8090");
+});
+
+/***************************************************
+ *              UPLOAD ROUTES
+ **************************************************/
+
+app.post("/uploadPCAP", (req, res) => {
+   let path = '';
+   upload(req, res, (err)=>{
+       if(err){
+           console.log(err);
+           res.jsonp({'success':false, 'err':err})
+       }
+       path = req.file.path;
+
+       console.log("Running analysis with filename:", path);
+
+       let loc = "./uploadPCAP.py";
+
+       // Spawn the child process to run the metric
+       const pyTest = spawn('python', [loc, "-filePath","./"+path]);
+
+       // put all of stdout into body
+       pyTest.stdout.on('data', (data) => {
+            console.log(data.toString())
+       });
+
+       // log any err's to console
+       pyTest.stderr.on('data', (data) => {
+           console.log(data.toString())
+       });
+
+       // when child process is done log the exit code
+       // and send the results to the browser
+       pyTest.on('close', (code) => {
+           console.log("uploadPcap Exit Code:", code.toString());
+       });
+
+       res.jsonp({'success':true, 'path':path})
+    })
 });
 
 /***************************************************
@@ -215,17 +267,34 @@ app.get('/api/pcap/getDeviceCount', (req, res) => {
     })
 });
 
-app.get('/api/pcap/getTypeCountForDevice/:id',(req,res)=>{
-    neoObj.getNumTypesPerDevice(parseInt(req.params.id)).then((data)=>{
+app.get('/api/pcap/getTypeCountForDevice/:id', (req, res) => {
+    neoObj.getNumTypesPerDevice(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
-    }).catch((err)=>{
+    }).catch((err) => {
         console.log(err);
         res.jsonp(err);
     })
 });
 
-app.get('/api/pcap/getPacketsByType/:id', (req, res) => {
-    neoObj.getPacketsByType().then((data) => {
+app.get('/api/pcap/getTypeCountForDevice/:id', (req, res) => {
+    neoObj.getNumTypesPerDevice(parseInt(req.params.id)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        console.log(err);
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getPacketsByTypeId/:id', (req, res) => {
+    neoObj.getPacketsByTypeId(parseInt(req.params.id)).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        res.jsonp(err);
+    })
+});
+
+app.get('/api/pcap/getDevicesByTypeId/:id', (req, res) => {
+    neoObj.getDevicesByTypeId(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
     }).catch((err) => {
         res.jsonp(err);
@@ -413,10 +482,10 @@ app.get('/api/pcap/getSourceOfPacket/:id', (req, res) => {
     })
 });
 
-app.get('/api/pcap/getTypeCountForLocation/:id',(req,res)=>{
-    neoObj.getNumTypesForLocation(parseInt(req.params.id)).then((data)=>{
+app.get('/api/pcap/getTypeCountForLocation/:id', (req, res) => {
+    neoObj.getNumTypesForLocation(parseInt(req.params.id)).then((data) => {
         res.jsonp(data);
-    }).catch((err)=>{
+    }).catch((err) => {
         console.log(err);
         res.jsonp(err);
     })
@@ -611,13 +680,13 @@ app.post('/api/pcap/createLocatedIn', (req, res) => {
 /***************************************************
  *              PCAP SAVE
  **************************************************/
-app.post('/api/pcap/save',(req,res)=>{
-   neoObj.savePcapFile(req.body).then((data)=>{
-       res.jsonp(data);
-   }).catch((err)=>{
-       console.log(err);
-       res.jsonp(err);
-   })
+app.post('/api/pcap/save', (req, res) => {
+    neoObj.savePcapFile(req.body).then((data) => {
+        res.jsonp(data);
+    }).catch((err) => {
+        console.log(err);
+        res.jsonp(err);
+    })
 });
 
 /***************************************************

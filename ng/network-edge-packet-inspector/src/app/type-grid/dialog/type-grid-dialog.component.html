@@ -1,4 +1,4 @@
-<h1>Type</h1>
+<h1>{{title}}</h1>
 <div style="width:50%">
 <mat-grid-list cols="2" rowHeight="20px">
   <mat-grid-tile *ngFor="let tile of tiles"
@@ -7,7 +7,16 @@
                  >{{tile.label}}: {{tile.data}}
   </mat-grid-tile>
 </mat-grid-list>
-</div>
-<div>
-  <h2>More stuff</h2>
+</div><br>
+<div *ngIf="!typeFlag" [hidden]="!loaded">
+  <ag-grid-angular
+    style="width: 1000px; height: 400px;"
+    class="ag-theme-blue"
+    [enableSorting]="true"
+    [enableFilter]="true"
+    [rowData]="gridData"
+    [columnDefs]="gridColumns"
+    [gridOptions]="gridOptions"
+    (gridReady)="onGridReady($event)">
+  </ag-grid-angular>
 </div>

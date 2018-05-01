@@ -74,4 +74,14 @@ export class DataServiceService {
     console.log("Getting type counts for location: ", id);
     return this.http.get(this.basePcap + "getTypeCountForLocation/" + id);
   }
+
+  getDevicesForType(id: number){
+    console.log("Getting type counts for location: ", id);
+    return this.http.get(this.basePcap + "getDevicesByTypeId/" + id);
+  }
+
+  getPacketsForType(id: number){
+    console.log("Getting type counts for location: ", id);
+    return this.http.get(this.basePcap + "getPacketsByTypeId/" + id);
+  }
 }

@@ -2,13 +2,13 @@
 <div [hidden]="!loaded">
   <h1>Type</h1>
   <button mat-button [disabled]="!rowSelected" [ngStyle]="{'color':!rowSelected ? 'gray' : 'white' }"
-          (click)="openDialog('type')">View Device
+          (click)="openDialog('type')">View Type
   </button>
   <button mat-button [disabled]="!rowSelected" [ngStyle]="{'color':!rowSelected ? 'gray' : 'white' }"
           (click)="openDialog('packets')">View Packets
   </button>
   <button mat-button [disabled]="!rowSelected" [ngStyle]="{'color':!rowSelected ? 'gray' : 'white' }"
-          (click)="openDialog('device')">View Device
+          (click)="openDialog('devices')">View Device
   </button>
   <ag-grid-angular
     style="width: 185vh;  height: 80vh;"

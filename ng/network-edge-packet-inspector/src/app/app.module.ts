@@ -4,6 +4,7 @@ import {NgModule} from "@angular/core";
 import {MatButtonModule, MatSidenavModule, MatDialogModule, MatListModule} from "@angular/material";
 import {MatDividerModule} from '@angular/material/divider';
 import {MatGridListModule} from '@angular/material/grid-list';
+import {MatFileUploadModule} from 'angular-material-fileupload';
 import {AppComponent} from "./app.component";
 import {PacketGridComponent} from "./packet-grid/packet-grid.component";
 import {PacketGridDialogComponent} from "./packet-grid/dialog/packet-grid-dialog.component";
@@ -18,6 +19,7 @@ import {HttpClientModule} from "@angular/common/http";
 import {AgGridModule} from "ag-grid-angular";
 import {DataServiceService} from "./data-service.service";
 import {RouterModule, Routes} from "@angular/router";
+import {FileSelectDirective} from 'ng2-file-upload/';
 
 const appRoutes: Routes = [
   {path: 'Packets', component: PacketGridComponent},
@@ -38,7 +40,8 @@ const appRoutes: Routes = [
     TypeGridDialogComponent,
     LocationGridComponent,
     LocationGridDialogComponent,
-    UploadComponent
+    UploadComponent,
+    FileSelectDirective
   ],
   imports: [
     BrowserModule,
@@ -50,6 +53,7 @@ const appRoutes: Routes = [
     MatDialogModule,
     MatGridListModule,
     MatListModule,
+    MatFileUploadModule,
     AgGridModule.withComponents([]),
     RouterModule.forRoot(appRoutes, {})
   ],

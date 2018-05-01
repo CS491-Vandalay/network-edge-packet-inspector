@@ -1,4 +1,9 @@
 <h1>Upload</h1>
-<div style="width:50%">
+<!-- File input for the file-upload plugin, with special ng2-file-upload directive called ng2FileSelect -->
+<input type="file" name="photo" ng2FileSelect [uploader]="uploader" />
+<!-- button to trigger the file upload when submitted -->
+<button type="button" class="btn btn-success btn-s" (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length">
+  Upload
+</button>
 
-</div>
+<h2 *ngIf="uploaded">File uploaded</h2>
