@@ -168,7 +168,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE t.type=$type return toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"type": type})
+                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE t.type=$type return toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport, p.size, p.destinationProtocol, p.sourceProtocol, p.sourceType, p.destinationType', {"type": type})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -178,6 +178,11 @@ module.exports = class Neo {
                             "destinationIp": record.get("p.destinationIp"),
                             "sport": record.get("p.sport"),
                             "dport": record.get("p.dport"),
+                            "size": record.get("p.size"),
+                            "sourceType": record.get("p.sourceType"),
+                            "destinationType": record.get("p.destinationType"),
+                            "sourceProtocol": record.get("p.sourceProtocol"),
+                            "destinationProtocol": record.get("p.destinationProtocol")
                         });
                     });
                     session.close();
@@ -194,7 +199,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE ID(t)=$id return toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": typeId})
+                .run('MATCH (t:Type)<-[:typeOf]-(p) WHERE ID(t)=$id return toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport, p.size, p.destinationProtocol, p.sourceProtocol, p.sourceType, p.destinationType', {"id": typeId})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -204,6 +209,11 @@ module.exports = class Neo {
                             "destinationIp": record.get("p.destinationIp"),
                             "sport": record.get("p.sport"),
                             "dport": record.get("p.dport"),
+                            "size": record.get("p.size"),
+                            "sourceType": record.get("p.sourceType"),
+                            "destinationType": record.get("p.destinationType"),
+                            "sourceProtocol": record.get("p.sourceProtocol"),
+                            "destinationProtocol": record.get("p.destinationProtocol")
                         });
                     });
                     session.close();
@@ -216,7 +226,7 @@ module.exports = class Neo {
         })
     }
 
-    getDevicesByTypeId(typeId){
+    getDevicesByTypeId(typeId) {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
@@ -421,7 +431,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Device)-[:comingFrom]->(p) WHERE ID(n)=$id RETURN DISTINCT toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": id})
+                .run('MATCH (n:Device)-[:comingFrom]->(p) WHERE ID(n)=$id RETURN DISTINCT toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport, p.size, p.destinationProtocol, p.sourceProtocol, p.sourceType, p.destinationType', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -431,6 +441,11 @@ module.exports = class Neo {
                             "destinationIp": record.get("p.destinationIp"),
                             "sport": record.get("p.sport"),
                             "dport": record.get("p.dport"),
+                            "size": record.get("p.size"),
+                            "sourceType": record.get("p.sourceType"),
+                            "destinationType": record.get("p.destinationType"),
+                            "sourceProtocol": record.get("p.sourceProtocol"),
+                            "destinationProtocol": record.get("p.destinationProtocol"),
                             "direction": "From"
                         });
                     });
@@ -449,7 +464,7 @@ module.exports = class Neo {
         console.log("ID:", typeof(id))
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (p)-[:goingTo]->(d:Device) WHERE ID(d)=$id RETURN DISTINCT toFloat(ID(p)) as pid, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": id})
+                .run('MATCH (p)-[:goingTo]->(d:Device) WHERE ID(d)=$id RETURN DISTINCT toFloat(ID(p)) as pid, p.sourceIp, p.destinationIp, p.sport, p.dport, p.size, p.destinationProtocol, p.sourceProtocol, p.sourceType, p.destinationType', {"id": id})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -459,6 +474,11 @@ module.exports = class Neo {
                             "destinationIp": record.get("p.destinationIp"),
                             "sport": record.get("p.sport"),
                             "dport": record.get("p.dport"),
+                            "size": record.get("p.size"),
+                            "sourceType": record.get("p.sourceType"),
+                            "destinationType": record.get("p.destinationType"),
+                            "sourceProtocol": record.get("p.sourceProtocol"),
+                            "destinationProtocol": record.get("p.destinationProtocol"),
                             "direction": "To"
                         });
                     });
@@ -528,7 +548,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport,n.dport')
+                .run('MATCH (n:Packet) RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport,n.dport, n.size, n.destinationProtocol, n.sourceProtocol, n.sourceType, n.destinationType')
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -537,7 +557,12 @@ module.exports = class Neo {
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
                             "sport": record.get("n.sport"),
-                            "dport": record.get("n.dport")
+                            "dport": record.get("n.dport"),
+                            "size": record.get("n.size"),
+                            "sourceType": record.get("n.sourceType"),
+                            "destinationType": record.get("n.destinationType"),
+                            "sourceProtocol": record.get("n.sourceProtocol"),
+                            "destinationProtocol": record.get("n.destinationProtocol")
                         });
                     });
                     session.close();
@@ -554,7 +579,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.sourceIp=$ip RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport', {"ip": ip})
+                .run('MATCH (n:Packet) WHERE n.sourceIp=$ip RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport, n.size, n.destinationProtocol, n.sourceProtocol, n.sourceType, n.destinationType', {"ip": ip})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -563,7 +588,12 @@ module.exports = class Neo {
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
                             "sport": record.get("n.sport"),
-                            "dport": record.get("n.dport")
+                            "dport": record.get("n.dport"),
+                            "size": record.get("n.size"),
+                            "sourceType": record.get("n.sourceType"),
+                            "destinationType": record.get("n.destinationType"),
+                            "sourceProtocol": record.get("n.sourceProtocol"),
+                            "destinationProtocol": record.get("n.destinationProtocol")
                         });
                     });
                     session.close();
@@ -580,7 +610,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.destinationIp=$ip RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport', {"ip": ip})
+                .run('MATCH (n:Packet) WHERE n.destinationIp=$ip RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport, n.size, n.destinationProtocol, n.sourceProtocol, n.sourceType, n.destinationType', {"ip": ip})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -589,7 +619,12 @@ module.exports = class Neo {
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
                             "sport": record.get("n.sport"),
-                            "dport": record.get("n.dport")
+                            "dport": record.get("n.dport"),
+                            "size": record.get("n.size"),
+                            "sourceType": record.get("n.sourceType"),
+                            "destinationType": record.get("n.destinationType"),
+                            "sourceProtocol": record.get("n.sourceProtocol"),
+                            "destinationProtocol": record.get("n.destinationProtocol")
                         });
                     });
                     session.close();
@@ -606,7 +641,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.sport=$port RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport', {"port": prt})
+                .run('MATCH (n:Packet) WHERE n.sport=$port RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport, n.size, n.destinationProtocol, n.sourceProtocol, n.sourceType, n.destinationType', {"port": prt})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -615,7 +650,12 @@ module.exports = class Neo {
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
                             "sport": record.get("n.sport"),
-                            "dport": record.get("n.dport")
+                            "dport": record.get("n.dport"),
+                            "size": record.get("n.size"),
+                            "sourceType": record.get("n.sourceType"),
+                            "destinationType": record.get("n.destinationType"),
+                            "sourceProtocol": record.get("n.sourceProtocol"),
+                            "destinationProtocol": record.get("n.destinationProtocol")
                         });
                     });
                     session.close();
@@ -632,7 +672,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (n:Packet) WHERE n.dport=$port RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport', {"port": prt})
+                .run('MATCH (n:Packet) WHERE n.dport=$port RETURN toFloat(ID(n)) as id, n.sourceIp, n.destinationIp, n.sport, n.dport, n.size, n.destinationProtocol, n.sourceProtocol, n.sourceType, n.destinationType', {"port": prt})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -641,7 +681,12 @@ module.exports = class Neo {
                             "sourceIp": record.get("n.sourceIp"),
                             "destinationIp": record.get("n.destinationIp"),
                             "sport": record.get("n.sport"),
-                            "dport": record.get("n.dport")
+                            "dport": record.get("n.dport"),
+                            "size": record.get("n.size"),
+                            "sourceType": record.get("n.sourceType"),
+                            "destinationType": record.get("n.destinationType"),
+                            "sourceProtocol": record.get("n.sourceProtocol"),
+                            "destinationProtocol": record.get("n.destinationProtocol")
                         });
                     });
                     session.close();
@@ -882,7 +927,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (l:Location)<-[r:locatedIn]-()<-[:goingTo]-(p) WHERE ID(l)=$id RETURN DISTINCT toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": lid})
+                .run('MATCH (l:Location)<-[r:locatedIn]-()<-[:goingTo]-(p) WHERE ID(l)=$id RETURN DISTINCT toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport, p.size, p.destinationProtocol, p.sourceProtocol, p.sourceType, p.destinationType', {"id": lid})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -892,6 +937,11 @@ module.exports = class Neo {
                             "destinationIp": record.get("p.destinationIp"),
                             "sport": record.get("p.sport"),
                             "dport": record.get("p.dport"),
+                            "size": record.get("p.size"),
+                            "sourceType": record.get("p.sourceType"),
+                            "destinationType": record.get("p.destinationType"),
+                            "sourceProtocol": record.get("p.sourceProtocol"),
+                            "destinationProtocol": record.get("p.destinationProtocol")
                         });
                     });
                     session.close();
@@ -908,7 +958,7 @@ module.exports = class Neo {
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
             session
-                .run('MATCH (l:Location)<-[r:locatedIn]-()-[:comingFrom]->(p) WHERE ID(l)=$id RETURN toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport', {"id": lid})
+                .run('MATCH (l:Location)<-[r:locatedIn]-()-[:comingFrom]->(p) WHERE ID(l)=$id RETURN toFloat(ID(p)) as id, p.sourceIp, p.destinationIp, p.sport, p.dport, p.size, p.destinationProtocol, p.sourceProtocol, p.sourceType, p.destinationType', {"id": lid})
                 .then((data) => {
                     let body = [];
                     data["records"].forEach((record) => {
@@ -918,6 +968,11 @@ module.exports = class Neo {
                             "destinationIp": record.get("p.destinationIp"),
                             "sport": record.get("p.sport"),
                             "dport": record.get("p.dport"),
+                            "size": record.get("p.size"),
+                            "sourceType": record.get("p.sourceType"),
+                            "destinationType": record.get("p.destinationType"),
+                            "sourceProtocol": record.get("p.sourceProtocol"),
+                            "destinationProtocol": record.get("p.destinationProtocol")
                         });
                     });
                     session.close();
@@ -1460,9 +1515,12 @@ module.exports = class Neo {
     savePcapFile(packetData) {
         console.log(packetData);
         let packet = {};
+        packet["size"] = packetData["SIZE"];
         if (packetData.hasOwnProperty('IP')) {
             packet["sourceIp"] = packetData["IP"]["src"];
+            packet["sourceType"] = packetData["IP"]["src-type"];
             packet["destinationIp"] = packetData["IP"]["dst"];
+            packet["destinationType"] = packetData["IP"]["dst-type"];
             let protocol = packetData["IP"]["proto"];
             if (packetData.hasOwnProperty(protocol)) {
                 if (packetData[protocol].hasOwnProperty("sport")) {
@@ -1471,8 +1529,14 @@ module.exports = class Neo {
                 }
             }
         }
+
+        if (packetData.hasOwnProperty("TCP")) {
+            packet["dProto"] = packetData["TCP"]["dProto"];
+            packet["sProto"] = packetData["TCP"]["sProto"];
+        }
+
         if (packetData.hasOwnProperty("HTTPLOAD")) {
-            console.log("content-type:", packetData["HTTPLOAD"]["Content-Type"])
+            console.log("content-type:", packetData["HTTPLOAD"]["Content-Type"]);
             packet["typeName"] = packetData["HTTPLOAD"].hasOwnProperty("Content-Type") ? packetData["HTTPLOAD"]["Content-Type"] : "Unknown";
         } else {
             packet["typeName"] = "Unknown";
@@ -1484,7 +1548,7 @@ module.exports = class Neo {
 
         let session = this.driver.session();
         return new Promise((resolve, reject) => {
-            return session.run(`MERGE(np:Packet{destinationIp:$destinationIp, sport:$sport, dport:$dport, sourceIp:$sourceIp})
+            return session.run(`MERGE(np:Packet{destinationIp:$destinationIp, sport:$sport, dport:$dport, sourceIp:$sourceIp, size:$size, sourceType:$srcType, destinationType: $dstType, destinationProtocol: $dProto, sourceProtocol: $sProto})
                                 MERGE(nt:Type{type:$typeName})
                                 MERGE(nsl:Location{city:$sCity, regionCode:$sRegionCode, areaCode:$sAreaCode, 
                                     timeZone:$sTimeZone, dmaCode:$sDmaCode,metroCode:$sMetroCode, 
@@ -1497,6 +1561,11 @@ module.exports = class Neo {
                 "sourceIp": packet["sourceIp"],
                 "sport": packet["sPort"],
                 "dport": packet["dPort"],
+                "size": packet["size"],
+                "srcType": packet["sourceType"],
+                "dstType": packet["destinationType"],
+                "dProto": packet["dProto"],
+                "sProto": packet["sProto"],
                 "typeName": packet["typeName"],
                 "sCity": packet["SOURCE"]["city"],
                 "sRegionCode": packet["SOURCE"]["regionCode"],

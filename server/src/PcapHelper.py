@@ -1,3 +1,4 @@
+import ConfigParser
 import json, pygeoip
 from scapy.all import *
 from scapy.layers.dns import DNS
@@ -8,6 +9,7 @@ class Analyser(object):
     # list to look up protocols
     global ip_flags_list
     global proto_list
+    global portConfigMap
 
     ip_flags_list = ["0", "MF", "DF"]
     proto_list = ["HOPOPT", "CMP", "IGMP", "GGP", "IP-in-IP", "ST", "TCP", "CBT", "EGP", "IGP", "BBN-RCC-MON",
@@ -30,9 +32,41 @@ class Analyser(object):
                   "SSCOPMCE", "IPLT", "SPS", "PIPE", "SCTP", "FC", "RSVP-E2E-IGNORE", "Mobility Header", "UDPLite",
                   "MPLS-in-IP", "manet", "HIP", "Shim6", "WESP", "ROHC"]
 
+    def __init__(self):
+        if os.path.isfile(os.getcwd() + "/src/Server.properties") == False:
+            print("file not found")
+            exit(1)
+        config = ConfigParser.SafeConfigParser()
+        config.read(os.getcwd() + "/src/Server.properties")
+        with open(config.get('PortConfigSection', 'portConfig.path'), 'r') as f:
+            self.portConfigMap = json.load(f)
+
     # Helper function for extracting packets IP header.
     # Return | Json Object with the extracted information.
     def getIPHeaders(self, pkt):
+
+        srcS = pkt['IP'].src.split(".")
+        slan = False
+        if srcS[0] == "10":
+            slan = True
+        elif srcS[0] == "172":
+            if int(srcS[1]) >= 16 & int(srcS[1]) <= 32:
+                slan = True
+        elif srcS[0] == "192":
+            if srcS[1] == "168":
+                slan = True
+
+        dstS = pkt['IP'].dst.split(".")
+        dlan = False
+        if dstS[0] == "10":
+            dlan = True
+        elif dstS[0] == "172":
+            if int(dstS[1]) >= 16 & int(dstS[1]) <= 32:
+                dlan = True
+        elif dstS[0] == "192":
+            if dstS[1] == "168":
+                dlan = True
+
         data = {
             "version": pkt['IP'].version,
             "ihl": pkt['IP'].ihl,
@@ -44,7 +78,9 @@ class Analyser(object):
             "ttl": pkt['IP'].ttl,
             "proto": proto_list[pkt['IP'].proto],
             "src": pkt['IP'].src,
-            "dst": pkt['IP'].dst
+            "src-type": "LAN" if slan else "WAN",
+            "dst": pkt['IP'].dst,
+            "dst-type": "LAN" if dlan else "WAN"
         }
 
         return data
@@ -52,6 +88,15 @@ class Analyser(object):
     # Helper function for extracting packets TCP header.
     # Return | Json Object with the extracted information.
     def getTCPHeaders(self, pkt):
+        print(self.portConfigMap['ports']['TCP']['443'])
+        if str(pkt['TCP'].sport) in self.portConfigMap['ports']['TCP']:
+            sProto = self.portConfigMap['ports']['TCP'][str(pkt['TCP'].sport)]
+        else:
+            sProto = 'Unknown'
+        if str(pkt['TCP'].dport) in self.portConfigMap['ports']['TCP']:
+            dProto = self.portConfigMap['ports']['TCP'][str(pkt['TCP'].dport)]
+        else:
+            dProto = 'Unknown'
         data = {
             "sport": pkt['TCP'].sport,
             "dport": pkt['TCP'].dport,
@@ -63,7 +108,9 @@ class Analyser(object):
             "window": pkt['TCP'].window,
             "chksum": pkt['TCP'].chksum,
             "urgptr": pkt['TCP'].urgptr,
-            "options": pkt['TCP'].options
+            "options": pkt['TCP'].options,
+            "sProto": sProto,
+            "dProto": dProto
         }
 
         return data
@@ -232,7 +279,10 @@ class Analyser(object):
                     return headers
 
     def analyse(self, pkt):
+
         data = {}
+
+        data.update({"SIZE": len(pkt)})
 
         hasIP = False
 
@@ -264,6 +314,7 @@ class Analyser(object):
             ip = data.get("IP")
             src = ip.get("src")
             dst = ip.get("dst")
+
             data.update({"SOURCE": self.lookUpIP(src)})
             data.update({"DESTINATION": self.lookUpIP(dst)})
 

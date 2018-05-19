@@ -40,7 +40,7 @@ let server = app.listen(8090, () => {
 /***************************************************
  *           ANGULAR STATIC FILES
  **************************************************/
-app.use(express.static(path.join("C:/Users/ascen/Desktop/School/Spring 2018/CS491/network-edge-packet-inspector/ng/network-edge-packet-inspector/dist")));
+app.use(express.static(path.join("/home/mrodger4/workspaces/CS491/network-edge-packet-inspector/ng/network-edge-packet-inspector/dist")));
 
 /***************************************************
  *              UPLOAD ROUTES
@@ -60,7 +60,7 @@ app.post("/uploadPCAP", (req, res) => {
        let loc = "./uploadPCAP.py";
 
        // Spawn the child process to run the metric
-       const pyTest = spawn('python2', [loc, "-filePath","./"+path]);
+       const pyTest = spawn('python', [loc, "-filePath","./"+path]);
 
        // put all of stdout into body
        pyTest.stdout.on('data', (data) => {

@@ -1,12 +1,16 @@
 import ConfigParser
 
+import os
 from py2neo import Graph, Node
 
 
 class DbHelper(object):
     def __init__(self):
+        if os.path.isfile(os.getcwd() + "/src/Server.properties") == False:
+            print("file not found")
+            exit(1)
         config = ConfigParser.RawConfigParser()
-        config.read('Server.properties')
+        config.read('/src/Server.properties')
         self._graph = Graph(host=config.get('DatabaseSection', 'database.dbhost'),
                                             user=config.get('DatabaseSection', 'database.user'),
                                             password=config.get('DatabaseSection', 'database.password'))

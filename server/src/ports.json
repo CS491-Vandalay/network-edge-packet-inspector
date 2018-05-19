@@ -1,0 +1,40 @@
+{
+  "ports": {
+    "TCP": {
+      "20": "FTP",
+      "21": "FTP",
+      "22": "SSH",
+      "23": "TELNET",
+      "25": "SMTP",
+      "53": "DNS",
+      "80": "HTTP",
+      "110": "POP",
+      "137": "NETBIOS",
+      "138": "NETBIOS",
+      "139": "NETBIOS",
+      "143": "IMAP",
+      "161": "SNMP",
+      "162": "SNMP",
+      "179": "BGP",
+      "389": "LDAP",
+      "443": "HTTPS",
+      "636": "LDAPS",
+      "989": "FTP OVER TLS/SSL",
+      "990": "FTP OVER TLS/SSL"
+    },
+    "UDP": {
+      "53": "DNS",
+      "67": "DHCP",
+      "68": "DHCP",
+      "69": "TFTP",
+      "123": "NTP",
+      "137": "NETBIOS",
+      "138": "NETBIOS",
+      "139": "NETBIOS",
+      "161": "SNMP",
+      "162": "SNMP",
+      "389": "LDAP",
+      "636": "LDAPS"
+    }
+  }
+}

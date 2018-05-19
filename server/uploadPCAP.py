@@ -1,3 +1,4 @@
+import ConfigParser
 import json, requests, time, argparse
 from src import PcapHelper as pcapHelper
 from scapy.all import *
@@ -24,6 +25,7 @@ packets = rdpcap(args.filePath[0])
 total = len(packets)
 current = 0
 start_time = time.time()
+
 analyzer = pcapHelper.Analyser()
 for pkt in packets:
     current += 1
@@ -31,6 +33,14 @@ for pkt in packets:
     temp = json.loads(data)
     requests.post('http://localhost:8090/api/pcap/save', json=temp)
     print "Uploading: %d/%d" % (current, total)
+
+
+# for pkt in packets:
+#    counter += 1
+#    data = analyzer.analyse(pkt)
+#    json.loads(data)
+#    print data
+#    break
 
 print "===================================="
 print "| RUN-TIME: %s seconds" % (time.time() - start_time)
