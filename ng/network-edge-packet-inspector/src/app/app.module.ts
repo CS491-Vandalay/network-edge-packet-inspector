@@ -4,7 +4,7 @@ import {NgModule} from "@angular/core";
 import {MatButtonModule, MatSidenavModule, MatDialogModule, MatListModule} from "@angular/material";
 import {MatDividerModule} from '@angular/material/divider';
 import {MatGridListModule} from '@angular/material/grid-list';
-import {MatFileUploadModule} from 'angular-material-fileupload';
+// import {MatFileUploadModule} from 'angular-material-fileupload';
 import {AppComponent} from "./app.component";
 import {PacketGridComponent} from "./packet-grid/packet-grid.component";
 import {PacketGridDialogComponent} from "./packet-grid/dialog/packet-grid-dialog.component";
@@ -53,7 +53,7 @@ const appRoutes: Routes = [
     MatDialogModule,
     MatGridListModule,
     MatListModule,
-    MatFileUploadModule,
+    // MatFileUploadModule,
     AgGridModule.withComponents([]),
     RouterModule.forRoot(appRoutes, {})
   ],

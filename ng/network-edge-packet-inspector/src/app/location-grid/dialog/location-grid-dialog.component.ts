@@ -114,7 +114,7 @@ export class LocationGridDialogComponent implements OnInit {
         this.gridOptions.columnApi.getAllColumns().forEach(function (column) {
           allColumnIds.push(column.getColId());
         });
-        this.gridOptions.columnApi.autoSizeColumns(allColumnIds, null);
+        this.gridOptions.columnApi.autoSizeColumns(allColumnIds);
 
       });
     }

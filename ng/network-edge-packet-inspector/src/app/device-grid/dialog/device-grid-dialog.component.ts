@@ -2,7 +2,7 @@ import {Component, OnInit, Inject} from '@angular/core';
 import {DataServiceService} from "../../data-service.service";
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
 import {GridOptions} from "ag-grid";
-import {forkJoin} from "rxjs/observable/forkJoin";
+import {forkJoin} from "rxjs";
 
 @Component({
   selector: 'app-device-grid-dialog',
@@ -56,7 +56,7 @@ export class DeviceGridDialogComponent implements OnInit {
   onGridReady(params) {
     console.log("grid ready");
     if (this.packetsFlag) {
-      this.gridColumns = [{headerName: "Id", field: "id", width: 80, suppressSizeToFit:true},
+      this.gridColumns = [{headerName: "Id", field: "id", width: 80, suppressSizeToFit: true},
         {headerName: "Source IP", field: "sourceIp"},
         {headerName: "Destination IP", field: "destinationIp"},
         {headerName: "Source Port", field: "sport"},
@@ -64,8 +64,8 @@ export class DeviceGridDialogComponent implements OnInit {
         {headerName: "Direction", field: "direction"}];
       this.gridData = [];
       forkJoin(
-        this.dataService.getPacketsFromDevice(this.device["id"]),
-        this.dataService.getPacketsToDevice(this.device["id"]))
+        [this.dataService.getPacketsFromDevice(this.device["id"]),
+          this.dataService.getPacketsToDevice(this.device["id"])])
         .subscribe((res: any[]) => {
           let fromPackets = [];
           if (res[0]["results"]) {
@@ -87,14 +87,14 @@ export class DeviceGridDialogComponent implements OnInit {
           // params.api.sizeColumnsToFit();
 
           let allColumnIds = [];
-          this.gridOptions.columnApi.getAllColumns().forEach(function(column) {
+          this.gridOptions.columnApi.getAllColumns().forEach(function (column) {
             allColumnIds.push(column.getColId());
           });
-          this.gridOptions.columnApi.autoSizeColumns(allColumnIds,null);
+          this.gridOptions.columnApi.autoSizeColumns(allColumnIds);
         });
     }
     else if (this.deviceFlag) {
-      this.gridColumns = [{headerName: "Id", field: "id", width: 80, suppressSizeToFit:true},
+      this.gridColumns = [{headerName: "Id", field: "id", width: 80, suppressSizeToFit: true},
         {headerName: "City", field: "city"},
         {headerName: "Region Code", field: "regionCode"},
         {headerName: "Area Code", field: "areaCode"},
@@ -112,7 +112,7 @@ export class DeviceGridDialogComponent implements OnInit {
       this.dataService.getLocationByDeviceId(this.device["id"]).subscribe((data) => {
         // Push the packet results into data
         this.gridData = [];
-        console.log("results:",data["results"]);
+        console.log("results:", data["results"]);
         if (data["results"]) {
           for (let v of data["results"]) {
             this.gridData.push(v);
